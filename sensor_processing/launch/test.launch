@@ -1,0 +1,11 @@
+<launch>
+
+  <!-- Run the sensor setup node -->
+  <node pkg="sensor_processing" type="sensor_setup" name="sensor_setup_node" output="screen">
+
+    <!-- Get parameters from parameter.yaml file -->
+    <rosparam file="$(find sensor_processing)/config/parameters.yaml" command="load" />
+	  
+  </node>
+  
+</launch>

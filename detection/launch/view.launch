@@ -1,0 +1,9 @@
+<launch>
+  <!-- Run the visualization node -->
+  <node pkg="visualization" type="visualization" name="visualization_node" output="screen">
+  </node>
+  <!-- Launch rviz for visualization -->
+  <node pkg="rviz" type="rviz" name="my_rviz"
+  args="-d $(find detection)config/rviz_config_detection.rviz"/>
+
+</launch>
