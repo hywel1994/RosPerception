@@ -364,7 +364,6 @@ void DbScan::filterClusters(const cv::Mat grid){
 
 		
 		// Determine if cluster can be a new track
-		Car
 		if(c.semantic.id == 13){
 			if(updateCar(c)){
 				if(spawnCar(c)){
