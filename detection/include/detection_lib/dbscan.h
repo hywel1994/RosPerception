@@ -17,6 +17,7 @@
 #include <helper/tools.h>
 #include <helper/ObjectArray.h>
 #include <tf/transform_listener.h>
+#include <numeric>
 
 // Namespaces
 namespace detection{
@@ -88,6 +89,9 @@ struct Cluster{
 	cv::Scalar color;
 	bool is_new_track;
 	bool has_adjacent_free_space;
+
+	// int * class_num;
+	std::vector<int> class_num;
 
 };
 

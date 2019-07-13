@@ -731,9 +731,9 @@ void SensorFusion::mapPointCloudIntoImage(const VPointCloud::Ptr cloud,
 
 		// Get semantic class
 		// TODO set target semantic class
-		// int semantic_class = tools_->SEMANTIC_COLOR_TO_CLASS[
-		// 	point.r + point.g + point.b];
-		int semantic_class = point.r + point.g + point.b;
+		int semantic_class = tools_->SEMANTIC_COLOR_TO_CLASS_VECTOR[{point.r , point.g , point.b}];
+		
+		// int semantic_class = point.r + point.g + point.b;
 		// Increment hash table counter for this grid cell
 		cell_hash_table[grid_occ][semantic_class]++;
 	}
@@ -782,9 +782,9 @@ void SensorFusion::mapPointCloudIntoImage(const VPointCloud::Ptr cloud,
 		point.y = y;
 		point.z = cell.ground;
 		// TODO set target semantic class
-		point.r = max_class/3; //tools_->SEMANTIC_CLASS_TO_COLOR(max_class,0);
-		point.g = max_class/3; //tools_->SEMANTIC_CLASS_TO_COLOR(max_class,1);
-		point.b = max_class/3; //tools_->SEMANTIC_CLASS_TO_COLOR(max_class,2);
+		point.r = tools_->SEMANTIC_CLASS_TO_COLOR(max_class,0);
+		point.g = tools_->SEMANTIC_CLASS_TO_COLOR(max_class,1);
+		point.b = tools_->SEMANTIC_CLASS_TO_COLOR(max_class,2);
 		pcl_sparse_semantic_->points.push_back(point);
 
 		// Fill detection grid with semantic class

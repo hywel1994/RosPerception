@@ -153,7 +153,7 @@ void DbScan::runDbScan(cv::Mat grid){
 
 			// Get semantic
 			int semantic_class = grid.at<cv::Vec3f>(y,x)[0];
-		
+			
 			// If not valid semantic continue
 			if(semantic_class < 0 ){
 				continue;
@@ -166,8 +166,9 @@ void DbScan::runDbScan(cv::Mat grid){
 
 			// New cluster
 			Cluster c = Cluster();
-			c.kernel = 10; //tools_->getClusterKernel(semantic_class);
-
+			c.kernel = 15; //tools_->getClusterKernel(semantic_class);
+			c.class_num.resize(150,0);
+			c.class_num[semantic_class] += 1;
 			// ROS_INFO("c.kernel [%d]", c.kernel);
 
 			// Init neighbor queue and add cell
@@ -208,6 +209,8 @@ void DbScan::runDbScan(cv::Mat grid){
 							// If this semantic matches with cluster semantic
 							if (true) {
 								if(n_semantic_class >= 0){
+
+									c.class_num[n_semantic_class] += 1;
 									// Flag neighbor cell as visited
 									grid.at<cv::Vec3f>(n_y,n_x)[0] -= 100;
 
@@ -215,6 +218,7 @@ void DbScan::runDbScan(cv::Mat grid){
 									neighbor_queue.push(cv::Point(n_x,n_y));
 
 									// Check free space attachment
+									/* 
 									if(!c.has_adjacent_free_space){
 										// If no free space cell next to it continue
 										int fs_kernel = 1;
@@ -229,7 +233,7 @@ void DbScan::runDbScan(cv::Mat grid){
 												break;
 											}
 										}
-									}
+									}*/
 
 								}
 							}
@@ -285,12 +289,14 @@ void DbScan::runDbScan(cv::Mat grid){
 			}
 
 			// Add semantic information
-			c.semantic.id = semantic_class;
+			c.semantic.id = std::distance(c.class_num.begin(), std::max_element(c.class_num.begin(), c.class_num.end()));
 			c.geometric.num_cells = c.geometric.cells.size();
-			c.semantic.confidence = float(c.geometric.num_cells) / 
-				(c.geometric.num_cells + c.semantic.diff_counter);
-			// TODO change set name
-			c.semantic.name = "Road"; //tools_->SEMANTIC_NAMES[c.semantic.id];
+			// c.semantic.confidence = float(c.geometric.num_cells) / 
+			// 	(c.geometric.num_cells + c.semantic.diff_counter);
+			c.semantic.confidence = float(c.class_num[c.semantic.id]) / std::accumulate(c.class_num.begin(), c.class_num.end(), 0);
+		
+			//  set name
+			c.semantic.name = tools_->SEMANTIC_NAMES[c.semantic.id];
 
 			// Push back cluster
 			clusters_.push_back(c);
@@ -356,11 +362,10 @@ void DbScan::filterClusters(const cv::Mat grid){
 		c.rect = rect;
 
 		// Get color BGR
-		// int r = tools_->SEMANTIC_CLASS_TO_COLOR(c.semantic.id, 0);
-		// int g = tools_->SEMANTIC_CLASS_TO_COLOR(c.semantic.id, 1);
-		// int b = tools_->SEMANTIC_CLASS_TO_COLOR(c.semantic.id, 2);
-		// c.color = cv::Scalar(r, g, b);
-		c.color = cv::Scalar(c.semantic.id,c.semantic.id,c.semantic.id);
+		int r = tools_->SEMANTIC_CLASS_TO_COLOR(c.semantic.id, 0);
+		int g = tools_->SEMANTIC_CLASS_TO_COLOR(c.semantic.id, 1);
+		int b = tools_->SEMANTIC_CLASS_TO_COLOR(c.semantic.id, 2);
+		c.color = cv::Scalar(r, g, b);
 
 		
 		// Determine if cluster can be a new track

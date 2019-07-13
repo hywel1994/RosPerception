@@ -32,6 +32,7 @@ public:
 	// Semantic helpers
 	std::vector<std::string> SEMANTIC_NAMES;
 	std::map<int, int> SEMANTIC_COLOR_TO_CLASS;
+	std::map<std::vector<int>, int> SEMANTIC_COLOR_TO_CLASS_VECTOR; 
 	MatrixXi SEMANTIC_CLASS_TO_COLOR;
 	VectorXi SEMANTIC_KERNEL_SIZE;
 	

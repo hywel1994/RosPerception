@@ -32,32 +32,32 @@ import sys
 DIR_PATH = os.path.dirname(sys.path[0])
 
 colors = loadmat(DIR_PATH+'/scripts/data/color150.mat')['colors']
-# road 7 
-colors[6] = [128,  64, 128]
-# sidewalk 12
-colors[11] = [244,  35, 232]
-# Building 2
-colors[1] = [70,  70,  70]
-# wall 1
-colors[0] = [102, 102, 156]
-# Fence 33
-colors[32] = [190, 153, 153]
-# Pole 94
-colors[93] = [153, 153, 153]
-# traffic 137
-colors[136] = [250, 170,  30]
-# sky 3
-colors[2] = [70, 130, 180]
-# person 13
-colors[12] = [220,  20,  60]
-# cycle 128
-colors[127] = [255,   0,   0]
-# car 21
-colors[20] = [0,   0, 142]
-# Truck 84
-colors[83] = [ 0,   0,  70]
-# Bus 81
-colors[80] = [0,  60, 100]
+# # road 7 
+# colors[6] = [128,  64, 128]
+# # sidewalk 12
+# colors[11] = [244,  35, 232]
+# # Building 2
+# colors[1] = [70,  70,  70]
+# # wall 1
+# colors[0] = [102, 102, 156]
+# # Fence 33
+# colors[32] = [190, 153, 153]
+# # Pole 94
+# colors[93] = [153, 153, 153]
+# # traffic 137
+# colors[136] = [250, 170,  30]
+# # sky 3
+# colors[2] = [70, 130, 180]
+# # person 13
+# colors[12] = [220,  20,  60]
+# # cycle 128
+# colors[127] = [255,   0,   0]
+# # car 21
+# colors[20] = [0,   0, 142]
+# # Truck 84
+# colors[83] = [ 0,   0,  70]
+# # Bus 81
+# colors[80] = [0,  60, 100]
 
 def load_model(args):
     args.arch_encoder = args.arch_encoder.lower()
