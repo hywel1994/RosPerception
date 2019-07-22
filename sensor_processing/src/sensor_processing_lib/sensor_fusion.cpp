@@ -707,6 +707,7 @@ void SensorFusion::mapPointCloudIntoImage(const VPointCloud::Ptr cloud,
 	cv_draw_semantic_image.image = draw_sem_image_;
 	cv_draw_semantic_image.encoding = "bgr8";
 	cv_draw_semantic_image.header.stamp = image->header.stamp;
+	// TODO set frame id
 	draw_image_pub_.publish(cv_draw_semantic_image.toImageMsg());
 
 /******************************************************************************
