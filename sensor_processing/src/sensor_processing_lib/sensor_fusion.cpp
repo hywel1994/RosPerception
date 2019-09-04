@@ -26,8 +26,11 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	pcl_sparse_semantic_(new VRGBPointCloud),
 	//cloud_sub_(nh, "/kitti/velo/pointcloud", 2),
 	//image_sub_(nh,	"/kitti/camera_color_left/image_raw", 2),
-	cloud_sub_(nh, "/velo/pointcloud", 2),
-	image_sub_(nh,	"/pointgrey/image_raw", 2),
+	// cloud_sub_(nh, "/velo/pointcloud", 2),
+	// image_sub_(nh,	"/pointgrey/image_raw", 2),
+	cloud_sub_(nh, "/velodyne_points2", 2),
+	image_sub_(nh,	"/camera/image_raw", 2),
+	
 	segmentaion_image_sub_(nh,	"/semantic_segmentation/image", 2),
 	sync_(MySyncPolicy(10), cloud_sub_, image_sub_, segmentaion_image_sub_){
 
@@ -173,7 +176,7 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	draw_image_pub_ =  nh_.advertise<Image>(
 		"/sensor/image/draw_image", 2);
 
-	// Define Subscriber
+	// Define SubscrregisterCallbackiber
 	sync_.registerCallback(boost::bind(&SensorFusion::process, this, _1, _2, _3));
 
 	// Init counter for publishing

@@ -20,6 +20,8 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <helper/tools.h>
@@ -157,7 +159,8 @@ private:
 	Subscriber<PointCloud2> cloud_sub_;
 	Subscriber<Image> image_sub_;
 	Subscriber<Image> segmentaion_image_sub_;
-	typedef sync_policies::ExactTime<PointCloud2, Image, Image> MySyncPolicy;
+	// ExactTime or ApproximateTime
+	typedef sync_policies::ApproximateTime<PointCloud2, Image, Image> MySyncPolicy;
 	Synchronizer<MySyncPolicy> sync_;
 
 	// Class functions

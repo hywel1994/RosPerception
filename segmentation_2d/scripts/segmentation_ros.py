@@ -98,9 +98,9 @@ def load_model(args):
     return segmentation_module
 
 class Segmentation(object):
-    def __init__(self, segmentation_module, nums_class, padding_constant, rate=2):
+    def __init__(self, segmentation_module, nums_class, padding_constant, rate=1):
         #self.image_sub = rospy.Subscriber("/kitti/camera_color_left/image_raw", Image, self.imageCallback, queue_size=2)
-        self.image_sub = rospy.Subscriber("/pointgrey/image_raw", Image, self.imageCallback, queue_size=2)
+        self.image_sub = rospy.Subscriber("/camera/image_raw", Image, self.imageCallback, queue_size=2)
         self.image_pub = rospy.Publisher("/semantic_segmentation/image", Image, queue_size=2)
         self.segmentation_module = segmentation_module
         self.padding_constant = padding_constant
@@ -116,6 +116,7 @@ class Segmentation(object):
             if self.flag:
                 self.segmentation_frame(self.cv_image)
                 self.flag = False
+            #rate.sleep()
 
     def imageCallback(self, image_msg):
         self.cv_image = CvBridge().imgmsg_to_cv2(image_msg, "bgr8")
@@ -197,17 +198,17 @@ if __name__ == '__main__':
     #                     help='a list of image paths, or a directory name')
 #baseline-resnet50dilated-ppm_deepsup
 #baseline-mobilenetv2dilated-c1_deepsup
-    parser.add_argument('--model_path', default='baseline-resnet50dilated-ppm_deepsup',
-                        help='folder to model path')
+    parser.add_argument('--model_path', default='baseline-mobilenetv2dilated-c1_deepsup',
+                        help='folder to model path: baseline-mobilenetv2dilated-c1_deepsup')
     parser.add_argument('--suffix', default='_epoch_20.pth',
                         help="which snapshot to load")
 
     # Model related arguments
-    parser.add_argument('--arch_encoder', default='resnet50dilated',
-                        help="architecture of net_encoder")
-    parser.add_argument('--arch_decoder', default='ppm_deepsup',
-                        help="architecture of net_decoder")
-    parser.add_argument('--fc_dim', default=2048, type=int,
+    parser.add_argument('--arch_encoder', default='mobilenetv2dilated',
+                        help="architecture of net_encoder : resnet50dilated")
+    parser.add_argument('--arch_decoder', default='c1_deepsup',
+                        help="architecture of net_decoder: ppm_deepsup ")
+    parser.add_argument('--fc_dim', default=320, type=int,
                         help='number of features between encoder and decoder')
 
     # Data related arguments
