@@ -17,14 +17,14 @@ UnscentedKF::UnscentedKF(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	{
 
 	// Define parameters
-	private_nh_.param("data_association/ped/dist/position",
-		params_.da_ped_dist_pos, params_.da_ped_dist_pos);
-	private_nh_.param("data_association/ped/dist/form",
-		params_.da_ped_dist_form, params_.da_ped_dist_form);
-	private_nh_.param("data_association/car/dist/position",
-		params_.da_car_dist_pos, params_.da_car_dist_pos);
-	private_nh_.param("data_association/car/dist/form",
-		params_.da_car_dist_form, params_.da_car_dist_form);
+	private_nh_.param("data_association/sculpture/dist/position",
+		params_.da_scu_dist_pos, params_.da_scu_dist_pos);
+	private_nh_.param("data_association/sculpture/dist/form",
+		params_.da_scu_dist_form, params_.da_scu_dist_form);
+	private_nh_.param("data_association/boat/dist/position",
+		params_.da_boat_dist_pos, params_.da_boat_dist_pos);
+	private_nh_.param("data_association/boat/dist/form",
+		params_.da_boat_dist_form, params_.da_boat_dist_form);
 
 	private_nh_.param("tracking/dim/z", params_.tra_dim_z,
 		params_.tra_dim_z);
@@ -59,10 +59,10 @@ UnscentedKF::UnscentedKF(ros::NodeHandle nh, ros::NodeHandle private_nh):
 		params_.p_init_yaw_rate);
 
 	// Print parameters
-	ROS_INFO_STREAM("da_ped_dist_pos " << params_.da_ped_dist_pos);
-	ROS_INFO_STREAM("da_ped_dist_form " << params_.da_ped_dist_form);
-	ROS_INFO_STREAM("da_car_dist_pos " << params_.da_car_dist_pos);
-	ROS_INFO_STREAM("da_car_dist_form " << params_.da_car_dist_form);
+	ROS_INFO_STREAM("da_scu_dist_pos " << params_.da_scu_dist_pos);
+	ROS_INFO_STREAM("da_scu_dist_form " << params_.da_scu_dist_form);
+	ROS_INFO_STREAM("da_boat_dist_pos " << params_.da_boat_dist_pos);
+	ROS_INFO_STREAM("da_boat_dist_form " << params_.da_boat_dist_form);
 	ROS_INFO_STREAM("tra_dim_z " << params_.tra_dim_z);
 	ROS_INFO_STREAM("tra_dim_x " << params_.tra_dim_x);
 	ROS_INFO_STREAM("tra_dim_x_aug " << params_.tra_dim_x_aug);
@@ -129,7 +129,7 @@ void UnscentedKF::process(const ObjectArrayConstPtr & detected_objects){
 		double delta_t = time_stamp - last_time_stamp_;
 
 		// Prediction
-		Prediction(delta_t);
+	    // Prediction(delta_t);
 
 		// Data association
 		GlobalNearestNeighbor(detected_objects);
@@ -309,19 +309,22 @@ void UnscentedKF::GlobalNearestNeighbor(
 		float gate;
 		float box_gate;
 
-		// Pedestrian
-		if(tracks_[i].sem.id == 11){
-			gate = params_.da_ped_dist_pos;
-			box_gate = params_.da_ped_dist_form;
-		}
-		// Car
-		else if(tracks_[i].sem.id == 13){
-			gate = params_.da_car_dist_pos;
-			box_gate = params_.da_car_dist_form;
-		}
-		else{
-			ROS_WARN("Wrong semantic for track [%d]", tracks_[i].id);
-		}
+
+		gate = params_.da_boat_dist_pos;
+		box_gate = params_.da_boat_dist_form;
+		// // Pedestrian
+		// if(tracks_[i].sem.id == 11){
+		// 	gate = params_.da_ped_dist_pos;
+		// 	box_gate = params_.da_ped_dist_form;
+		// }
+		// // Car
+		// else if(tracks_[i].sem.id == 13){
+		// 	gate = params_.da_car_dist_pos;
+		// 	box_gate = params_.da_car_dist_form;
+		// }
+		// else{
+		// 	ROS_WARN("Wrong semantic for track [%d]", tracks_[i].id);
+		// }
 
 		// Loop through detected objects
 		for(int j = 0; j < detected_objects->list.size(); ++j){

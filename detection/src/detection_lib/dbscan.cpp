@@ -21,68 +21,68 @@ DbScan::DbScan(ros::NodeHandle nh, ros::NodeHandle private_nh):
 		params_.grid_range_max);
 	private_nh_.param("grid/cell/size", params_.grid_cell_size,
 		params_.grid_cell_size);
-	private_nh_.param("pedestrian/spawn/side/min", params_.ped_spawn.side_min,
-		params_.ped_spawn.side_min);
-	private_nh_.param("pedestrian/spawn/side/max", params_.ped_spawn.side_max,
-		params_.ped_spawn.side_max);
-	private_nh_.param("pedestrian/spawn/height/min", params_.ped_spawn.height_min,
-		params_.ped_spawn.height_min);
-	private_nh_.param("pedestrian/spawn/height/max", params_.ped_spawn.height_max,
-		params_.ped_spawn.height_max);
-	private_nh_.param("pedestrian/spawn/semantic/min", params_.ped_spawn.semantic_min,
-		params_.ped_spawn.semantic_min);
-	private_nh_.param("car/spawn/side/min", params_.car_spawn.side_min,
-		params_.car_spawn.side_min);
-	private_nh_.param("car/spawn/side/max", params_.car_spawn.side_max,
-		params_.car_spawn.side_max);
-	private_nh_.param("car/spawn/height/min", params_.car_spawn.height_min,
-		params_.car_spawn.height_min);
-	private_nh_.param("car/spawn/height/max", params_.car_spawn.height_max,
-		params_.car_spawn.height_max);
-	private_nh_.param("car/spawn/semantic/min", params_.car_spawn.semantic_min,
-		params_.car_spawn.semantic_min);
-	private_nh_.param("pedestrian/update/side/min", params_.ped_update.side_min,
-		params_.ped_update.side_min);
-	private_nh_.param("pedestrian/update/side/max", params_.ped_update.side_max,
-		params_.ped_update.side_max);
-	private_nh_.param("pedestrian/update/height/min", params_.ped_update.height_min,
-		params_.ped_update.height_min);
-	private_nh_.param("pedestrian/update/height/max", params_.ped_update.height_max,
-		params_.ped_update.height_max);
-	private_nh_.param("pedestrian/update/semantic/min", params_.ped_update.semantic_min,
-		params_.ped_update.semantic_min);
-	private_nh_.param("car/update/side/min", params_.car_update.side_min,
-		params_.car_update.side_min);
-	private_nh_.param("car/update/side/max", params_.car_update.side_max,
-		params_.car_update.side_max);
-	private_nh_.param("car/update/height/min", params_.car_update.height_min,
-		params_.car_update.height_min);
-	private_nh_.param("car/update/height/max", params_.car_update.height_max,
-		params_.car_update.height_max);
-	private_nh_.param("car/update/semantic/min", params_.car_update.semantic_min,
-		params_.car_update.semantic_min);
+	private_nh_.param("sculpture/spawn/side/min", params_.scu_spawn.side_min,
+		params_.scu_spawn.side_min);
+	private_nh_.param("sculpture/spawn/side/max", params_.scu_spawn.side_max,
+		params_.scu_spawn.side_max);
+	private_nh_.param("sculpture/spawn/height/min", params_.scu_spawn.height_min,
+		params_.scu_spawn.height_min);
+	private_nh_.param("sculpture/spawn/height/max", params_.scu_spawn.height_max,
+		params_.scu_spawn.height_max);
+	private_nh_.param("sculpture/spawn/semantic/min", params_.scu_spawn.semantic_min,
+		params_.scu_spawn.semantic_min);
+	private_nh_.param("boat/spawn/side/min", params_.boat_spawn.side_min,
+		params_.boat_spawn.side_min);
+	private_nh_.param("boat/spawn/side/max", params_.boat_spawn.side_max,
+		params_.boat_spawn.side_max);
+	private_nh_.param("boat/spawn/height/min", params_.boat_spawn.height_min,
+		params_.boat_spawn.height_min);
+	private_nh_.param("boat/spawn/height/max", params_.boat_spawn.height_max,
+		params_.boat_spawn.height_max);
+	private_nh_.param("boat/spawn/semantic/min", params_.boat_spawn.semantic_min,
+		params_.boat_spawn.semantic_min);
+	private_nh_.param("sculpture/update/side/min", params_.scu_update.side_min,
+		params_.scu_update.side_min);
+	private_nh_.param("sculpture/update/side/max", params_.scu_update.side_max,
+		params_.scu_update.side_max);
+	private_nh_.param("sculpture/update/height/min", params_.scu_update.height_min,
+		params_.scu_update.height_min);
+	private_nh_.param("sculpture/update/height/max", params_.scu_update.height_max,
+		params_.scu_update.height_max);
+	private_nh_.param("sculpture/update/semantic/min", params_.scu_update.semantic_min,
+		params_.scu_update.semantic_min);
+	private_nh_.param("boat/update/side/min", params_.boat_update.side_min,
+		params_.boat_update.side_min);
+	private_nh_.param("boat/update/side/max", params_.boat_update.side_max,
+		params_.boat_update.side_max);
+	private_nh_.param("boat/update/height/min", params_.boat_update.height_min,
+		params_.boat_update.height_min);
+	private_nh_.param("boat/update/height/max", params_.boat_update.height_max,
+		params_.boat_update.height_max);
+	private_nh_.param("boat/update/semantic/min", params_.boat_update.semantic_min,
+		params_.boat_update.semantic_min);
 
 	// Print parameters
-	ROS_INFO_STREAM("ped_spawn.side_min " << params_.ped_spawn.side_min);
-	ROS_INFO_STREAM("ped_spawn.side_max " << params_.ped_spawn.side_max);
-	ROS_INFO_STREAM("ped_spawn.height_min " << params_.ped_spawn.height_min);
-	ROS_INFO_STREAM("ped_spawn.height_max " << params_.ped_spawn.height_max);
-	ROS_INFO_STREAM("ped_spawn.semantic_min " << params_.ped_spawn.semantic_min);
-	ROS_INFO_STREAM("car_spawn.side_min " << params_.car_spawn.side_min);
-	ROS_INFO_STREAM("car_spawn.side_max " << params_.car_spawn.side_max);
-	ROS_INFO_STREAM("car_spawn.height_min " << params_.car_spawn.height_min);
-	ROS_INFO_STREAM("car_spawn.height_max " << params_.car_spawn.height_max);
-	ROS_INFO_STREAM("car_spawn.semantic_min " << params_.car_spawn.semantic_min);
-	ROS_INFO_STREAM("ped_update.side_min " << params_.ped_update.side_min);
-	ROS_INFO_STREAM("ped_update.side_max " << params_.ped_update.side_max);
-	ROS_INFO_STREAM("ped_update.height_min " << params_.ped_update.height_min);
-	ROS_INFO_STREAM("ped_update.height_max " << params_.ped_update.height_max);
-	ROS_INFO_STREAM("ped_update.semantic_min " << params_.ped_update.semantic_min);
-	ROS_INFO_STREAM("car_update.side_min " << params_.car_update.side_min);
-	ROS_INFO_STREAM("car_update.side_max " << params_.car_update.side_max);
-	ROS_INFO_STREAM("car_update.height_min " << params_.car_update.height_min);
-	ROS_INFO_STREAM("car_update.height_max " << params_.car_update.height_max);
-	ROS_INFO_STREAM("car_update.semantic_min " << params_.car_update.semantic_min);
+	ROS_INFO_STREAM("scu_spawn.side_min " << params_.scu_spawn.side_min);
+	ROS_INFO_STREAM("scu_spawn.side_max " << params_.scu_spawn.side_max);
+	ROS_INFO_STREAM("scu_spawn.height_min " << params_.scu_spawn.height_min);
+	ROS_INFO_STREAM("scu_spawn.height_max " << params_.scu_spawn.height_max);
+	ROS_INFO_STREAM("scu_spawn.semantic_min " << params_.scu_spawn.semantic_min);
+	ROS_INFO_STREAM("boat_spawn.side_min " << params_.boat_spawn.side_min);
+	ROS_INFO_STREAM("boat_spawn.side_max " << params_.boat_spawn.side_max);
+	ROS_INFO_STREAM("boat_spawn.height_min " << params_.boat_spawn.height_min);
+	ROS_INFO_STREAM("boat_spawn.height_max " << params_.boat_spawn.height_max);
+	ROS_INFO_STREAM("boat_spawn.semantic_min " << params_.boat_spawn.semantic_min);
+	ROS_INFO_STREAM("scu_update.side_min " << params_.scu_update.side_min);
+	ROS_INFO_STREAM("scu_update.side_max " << params_.scu_update.side_max);
+	ROS_INFO_STREAM("scu_update.height_min " << params_.scu_update.height_min);
+	ROS_INFO_STREAM("scu_update.height_max " << params_.scu_update.height_max);
+	ROS_INFO_STREAM("scu_update.semantic_min " << params_.scu_update.semantic_min);
+	ROS_INFO_STREAM("boat_update.side_min " << params_.boat_update.side_min);
+	ROS_INFO_STREAM("boat_update.side_max " << params_.boat_update.side_max);
+	ROS_INFO_STREAM("boat_update.height_min " << params_.boat_update.height_min);
+	ROS_INFO_STREAM("boat_update.height_max " << params_.boat_update.height_max);
+	ROS_INFO_STREAM("boat_update.semantic_min " << params_.boat_update.semantic_min);
 
 	tools_ = new Tools(false);
 	// Init counter for publishing
@@ -218,7 +218,7 @@ void DbScan::runDbScan(cv::Mat grid){
 									neighbor_queue.push(cv::Point(n_x,n_y));
 
 									// Check free space attachment
-									/* 
+
 									if(!c.has_adjacent_free_space){
 										// If no free space cell next to it continue
 										int fs_kernel = 1;
@@ -233,7 +233,7 @@ void DbScan::runDbScan(cv::Mat grid){
 												break;
 											}
 										}
-									}*/
+									}
 
 								}
 							}
@@ -305,6 +305,7 @@ void DbScan::runDbScan(cv::Mat grid){
 
 	// Determine number of clusters
 	number_of_clusters_ = clusters_.size();
+
 }
 
 void DbScan::filterClusters(const cv::Mat grid){
@@ -367,29 +368,39 @@ void DbScan::filterClusters(const cv::Mat grid){
 		int b = tools_->SEMANTIC_CLASS_TO_COLOR(c.semantic.id, 2);
 		c.color = cv::Scalar(r, g, b);
 
-		
-		// Determine if cluster can be a new track
-		if(c.semantic.id == 13){
-			if(updateCar(c)){
-				if(spawnCar(c)){
-					c.is_new_track = true;
-				}
-				addObject(c);
-			}
-		}
-		// Pedestrian
-		else if(c.semantic.id == 11){
-			if(updatePed(c)){
-				if(spawnPed(c)){
-					c.is_new_track = true;
-				}
-				addObject(c);
-			}
-		}
-		else{
-			// to do set obeject
+		// if(updateBoat(c)){
+		// 	if(spawnBoat(c)){
+		// 		c.is_new_track = true;
+		// 	}
+		// 	addObject(c);
+		// }
+
+		if(updateScu(c)){
 			addObject(c);
 		}
+		// addObject(c);
+		// Determine if cluster can be a new track
+		// if(c.semantic.id == 13){
+		// 	if(updateCar(c)){
+		// 		if(spawnCar(c)){
+		// 			c.is_new_track = true;
+		// 		}
+		// 		addObject(c);
+		// 	}
+		// }
+		// // Pedestrian
+		// else if(c.semantic.id == 11){
+		// 	if(updatePed(c)){
+		// 		if(spawnPed(c)){
+		// 			c.is_new_track = true;
+		// 		}
+		// 		addObject(c);
+		// 	}
+		// }
+		// else{
+		// 	// to do set obeject
+		// 	addObject(c);
+		// }
 	}
 }
 
@@ -455,70 +466,64 @@ void DbScan::addObject(const Cluster & c){
 	object_array_.list.push_back(object);
 }
 
-bool DbScan::spawnPed(const Cluster & c){
-	return (c.geometric.width > params_.ped_spawn.side_min ||
-		c.geometric.length > params_.ped_spawn.side_min)
+bool DbScan::spawnScu(const Cluster & c){
+	return (c.geometric.width > params_.scu_spawn.side_min ||
+		c.geometric.length > params_.scu_spawn.side_min)
 		&&
-		(c.geometric.width < params_.ped_spawn.side_max &&
-		c.geometric.length < params_.ped_spawn.side_max)
+		(c.geometric.width < params_.scu_spawn.side_max &&
+		c.geometric.length < params_.scu_spawn.side_max)
 		&&
-		(c.geometric.height > params_.ped_spawn.height_min && 
-		c.geometric.height < params_.ped_spawn.height_max)
+		(c.geometric.height > params_.scu_spawn.height_min && 
+		c.geometric.height < params_.scu_spawn.height_max)
 		&&
-		(c.semantic.confidence > params_.ped_spawn.semantic_min)
-		&&
-		c.has_adjacent_free_space;
-}
-
-bool DbScan::spawnCar(const Cluster & c){
-	return (c.geometric.width > params_.car_spawn.side_min ||
-		c.geometric.length > params_.car_spawn.side_min)
-		&&
-		(c.geometric.width < params_.car_spawn.side_max &&
-		c.geometric.length < params_.car_spawn.side_max)
-		&&
-		(c.geometric.height > params_.car_spawn.height_min && 
-		c.geometric.height < params_.car_spawn.height_max)
-		&&
-		(c.semantic.confidence > params_.car_spawn.semantic_min)
+		(c.semantic.confidence > params_.scu_spawn.semantic_min)
 		&&
 		c.has_adjacent_free_space;
 }
 
-bool DbScan::updatePed(const Cluster & c){
-	return (c.geometric.width > params_.ped_update.side_min ||
-		c.geometric.length > params_.ped_update.side_min)
+bool DbScan::updateScu(const Cluster & c){
+	return (c.geometric.width > params_.scu_update.side_min ||
+		c.geometric.length > params_.scu_update.side_min)
 		&&
-		(c.geometric.width < params_.ped_update.side_max &&
-		c.geometric.length < params_.ped_update.side_max)
+		(c.geometric.width < params_.scu_update.side_max &&
+		c.geometric.length < params_.scu_update.side_max)
 		&&
-		(c.geometric.height > params_.ped_update.height_min && 
-		c.geometric.height < params_.ped_update.height_max)
+		(c.geometric.height > params_.scu_update.height_min && 
+		c.geometric.height < params_.scu_update.height_max)
 		&&
-		(c.semantic.confidence > params_.ped_update.semantic_min);
+		(c.semantic.confidence > params_.scu_update.semantic_min);
 }
 
-bool DbScan::updateCar(const Cluster & c){
-	return (c.geometric.width > params_.car_update.side_min ||
-		c.geometric.length > params_.car_update.side_min)
+bool DbScan::spawnBoat(const Cluster & c){
+	return (c.geometric.width > params_.boat_spawn.side_min ||
+		c.geometric.length > params_.boat_spawn.side_min)
 		&&
-		(c.geometric.width < params_.car_update.side_max &&
-		c.geometric.length < params_.car_update.side_max)
+		(c.geometric.width < params_.boat_spawn.side_max &&
+		c.geometric.length < params_.boat_spawn.side_max)
 		&&
-		(c.geometric.height > params_.car_update.height_min && 
-		c.geometric.height < params_.car_update.height_max)
+		(c.geometric.height > params_.boat_spawn.height_min && 
+		c.geometric.height < params_.boat_spawn.height_max)
 		&&
-		(c.semantic.confidence > params_.car_update.semantic_min);
+		(c.semantic.confidence > params_.boat_spawn.semantic_min)
+		&&
+		c.has_adjacent_free_space;
+}
+
+bool DbScan::updateBoat(const Cluster & c){
+	return (c.geometric.width > params_.boat_update.side_min ||
+		c.geometric.length > params_.boat_update.side_min)
+		&&
+		(c.geometric.width < params_.boat_update.side_max &&
+		c.geometric.length < params_.boat_update.side_max)
+		&&
+		(c.geometric.height > params_.boat_update.height_min && 
+		c.geometric.height < params_.boat_update.height_max)
+		&&
+		(c.semantic.confidence > params_.boat_update.semantic_min);
 }
 
 bool DbScan::isValidSemantic(const int semantic_class){
 	return semantic_class > 10;
-}
-
-bool DbScan::isKittiValidSemantic(const int semantic_class){
-
-	// Only allow Cars and Pedestrians
-	return (semantic_class == 11 || semantic_class == 13);
 }
 
 void DbScan::printCluster(const Cluster & c){

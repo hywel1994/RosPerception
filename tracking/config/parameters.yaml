@@ -7,6 +7,14 @@ data_association:
     dist:
       position: 2.0
       form: 5.0
+  sculpture:
+    dist:
+      position: 1.0
+      form: 2.0
+  boat:
+    dist:
+      position: 2.0
+      form: 5.0
 
 tracking:
   dim:

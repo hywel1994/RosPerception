@@ -15,8 +15,8 @@ class synchronizer:
         # self.pub_Image = rospy.Publisher('image_raw_sync', SesnorImage, queue_size=1)
         # self.pub_Cam_Info = rospy.Publisher('camera_info_sync', CameraInfo, queue_size=1)
         # self.pub_Lidar = rospy.Publisher('rslidar_points_sync', PointCloud2, queue_size=1)
-        self.imuInput = message_filters.Subscriber("/imu/imu", Imu)
-        self.gpsInput = message_filters.Subscriber('/gps/gps', NavSatFix)
+        self.imuInput = message_filters.Subscriber("/imu", Imu)
+        self.gpsInput = message_filters.Subscriber('/gps', NavSatFix)
 
         self.ts = message_filters.TimeSynchronizer([self.imuInput
                                                     , self.gpsInput
@@ -25,13 +25,14 @@ class synchronizer:
         self.br_boat_world = tf.TransformBroadcaster()
 
         self.br_lidar_boat = tf.TransformBroadcaster()
-
+        self.br_camera_boat = tf.TransformBroadcaster()
         self._imu_raw = Imu()
         self._gps_raw = NavSatFix()
         
 
         
     def general_callback(self, imu_raw, gps_raw):
+        print ('pub tf tree')
         self._imu_raw = imu_raw
         self._gps_raw = gps_raw
         # print (msg)
@@ -56,7 +57,13 @@ class synchronizer:
         self.br_lidar_boat.sendTransform((0.2, 0, 0.1),
                      tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
-                     "velo",
+                     "lidar",
+                     "boat")
+        
+        self.br_camera_boat.sendTransform((0.2, 0, 0.1),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "camera",
                      "boat")
 
         print ('4: ', time.time()-date)

@@ -118,13 +118,13 @@ private:
 	Parameters params_;
 
 	VPointCloud::Ptr pcl_in_;
-	VPointCloud::Ptr pcl_ground_plane_;
-	VPointCloud::Ptr pcl_ground_plane_inliers_;
-	VPointCloud::Ptr pcl_ground_plane_outliers_;
+	// VPointCloud::Ptr pcl_ground_plane_;
+	// VPointCloud::Ptr pcl_ground_plane_inliers_;
+	// VPointCloud::Ptr pcl_ground_plane_outliers_;
 	VPointCloud::Ptr pcl_ground_;
 	VPointCloud::Ptr pcl_elevated_;
-	VPointCloud::Ptr pcl_voxel_ground_;
-	VPointCloud::Ptr pcl_voxel_elevated_;
+	// VPointCloud::Ptr pcl_voxel_ground_;
+	// VPointCloud::Ptr pcl_voxel_elevated_;
 	std::vector< std::vector<PolarCell> > polar_grid_;
 	OccupancyGrid::Ptr occ_grid_;
 
@@ -140,12 +140,12 @@ private:
 
 	// Publisher
 	ros::Publisher cloud_filtered_pub_;
-	ros::Publisher cloud_ground_plane_inliers_pub_;
-	ros::Publisher cloud_ground_plane_outliers_pub_;
+	// ros::Publisher cloud_ground_plane_inliers_pub_;
+	// ros::Publisher cloud_ground_plane_outliers_pub_;
 	ros::Publisher cloud_ground_pub_;
 	ros::Publisher cloud_elevated_pub_;
-	ros::Publisher voxel_ground_pub_;
-	ros::Publisher voxel_elevated_pub_;
+	// ros::Publisher voxel_ground_pub_;
+	// ros::Publisher voxel_elevated_pub_;
 	ros::Publisher grid_occupancy_pub_;
 
 	ros::Publisher draw_image_pub_;
@@ -160,7 +160,7 @@ private:
 	Subscriber<Image> image_sub_;
 	Subscriber<Image> segmentaion_image_sub_;
 	// ExactTime or ApproximateTime
-	typedef sync_policies::ApproximateTime<PointCloud2, Image, Image> MySyncPolicy;
+	typedef sync_policies::ExactTime<PointCloud2, Image, Image> MySyncPolicy;
 	Synchronizer<MySyncPolicy> sync_;
 
 	// Class functions

@@ -4,8 +4,11 @@ import rospy
 from std_msgs.msg import String 
 from std_msgs.msg import Header
 from sensor_msgs.msg import Image
+from sensor_msgs.msg import PointCloud2
 from cv_bridge import CvBridge, CvBridgeError 
 from copy import deepcopy
+import copy as copy_module
+import message_filters
 
 # System libs
 import os
@@ -98,50 +101,73 @@ def load_model(args):
     return segmentation_module
 
 class Segmentation(object):
-    def __init__(self, segmentation_module, nums_class, padding_constant, rate=1):
+    def __init__(self, segmentation_module, nums_class, padding_constant, rate=2):
         #self.image_sub = rospy.Subscriber("/kitti/camera_color_left/image_raw", Image, self.imageCallback, queue_size=2)
-        self.image_sub = rospy.Subscriber("/camera/image_raw", Image, self.imageCallback, queue_size=2)
-        self.image_pub = rospy.Publisher("/semantic_segmentation/image", Image, queue_size=2)
+        self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.imageCallback, queue_size=2)
+        self.cloud_sub = rospy.Subscriber("/velodyne_points", PointCloud2, self.cloudCallback, queue_size=2)
+        self.count = 0
+        # self.ts = message_filters.TimeSynchronizer([self.image_sub
+        #                                             , self.cloud_sub
+        #                                             ], 10)
+        # self.ts.registerCallback(self.general_callback)
+
+        self.cloud_pub = rospy.Publisher("/velodyne_point/cloud", PointCloud2, queue_size=1)
+        self.image_raw_pub = rospy.Publisher("/image_raw/image", Image, queue_size=1)
+        self.image_pub = rospy.Publisher("/semantic_segmentation/image", Image, queue_size=1)
+        
         self.segmentation_module = segmentation_module
         self.padding_constant = padding_constant
         self.nums_class = nums_class
         self.normalize = transforms.Normalize(
             mean=[102.9801, 115.9465, 122.7717],
             std=[1., 1., 1.])
-        self.flag = False
+        self.flag_img = False
+        self.flag_cloud = False
         rospy.init_node('segmentation_node')
         rate = rospy.Rate(rate)
         
         while not rospy.is_shutdown():
-            if self.flag:
-                self.segmentation_frame(self.cv_image)
-                self.flag = False
-            #rate.sleep()
+            if self.flag_img and self.flag_cloud:
+                print ('process')
+                tmp_img = copy_module.deepcopy(self.image_msg)
+                tmp_cloud = copy_module.deepcopy(self.cloud_msg)
+                cv_image = CvBridge().imgmsg_to_cv2(tmp_img, "bgr8")
+                frame_id = tmp_img.header.frame_id
+                stamp = tmp_img.header.stamp
+                tmp_cloud.header.stamp = stamp
+                self.segmentation_frame(cv_image, frame_id, stamp)
+                self.cloud_pub.publish(tmp_cloud)
+                self.flag_img = False
+                self.flag_cloud = False
+
+            rate.sleep()
+    
+    def cloudCallback(self, cloud_msg):
+        #print ('get cloud')
+        self.cloud_msg = cloud_msg
+        self.flag_cloud = True
 
     def imageCallback(self, image_msg):
-        self.cv_image = CvBridge().imgmsg_to_cv2(image_msg, "bgr8")
-        self.frame_id = image_msg.header.frame_id
-        self.stamp = image_msg.header.stamp
-        self.flag = True
+        #print ('get img')
+        self.image_msg = image_msg
+        self.flag_img = True
 
-        #self.segmentation_frame(cv_image)
-        
-    def segmentation_frame(self, img):
+    def segmentation_frame(self, img, frame_id, stamp):
         #image = cv2.resize(image, (height, width))
         ori_height, ori_width, _ = img.shape
-
-        this_short_size = 600
-        imgMaxSize = 1000
-        scale = min(this_short_size / float(min(ori_height, ori_width)),
-                    imgMaxSize / float(max(ori_height, ori_width)))
-        target_height, target_width = int(ori_height * scale), int(ori_width * scale)
+        print ('ori image ', ori_height, ori_width)
 
         # to avoid rounding in network
-        target_height = self.round2nearest_multiple(target_height, self.padding_constant)
-        target_width = self.round2nearest_multiple(target_width, self.padding_constant)
+        target_height = self.round2nearest_multiple(ori_height, self.padding_constant)
+        target_width = self.round2nearest_multiple(ori_width, self.padding_constant)
 
         # resize
         image = cv2.resize(img.copy(), (target_width, target_height))
+
+        pub_image = CvBridge().cv2_to_imgmsg(image, "bgr8")
+        pub_image.header.frame_id = frame_id
+        pub_image.header.stamp = stamp
+        self.image_raw_pub.publish(pub_image)
 
         # image transform
         image = self.img_transform(image).cuda()
@@ -153,7 +179,7 @@ class Segmentation(object):
         print ('image ', image.shape)
 
         #segSize = (image.shape[2],image.shape[3])
-        segSize = (ori_height, ori_width)
+        segSize = (target_height, target_width)
         scores = torch.zeros(1, args.num_class, segSize[0], segSize[1])
         scores = async_copy_to(scores, args.gpu)
         feed_dict = {}
@@ -166,8 +192,8 @@ class Segmentation(object):
         print ('pred ', pred.shape)
         pred_color = colorEncode(pred, colors).astype(np.uint8)
         pub_image = CvBridge().cv2_to_imgmsg(pred_color, "bgr8")
-        pub_image.header.frame_id = self.frame_id
-        pub_image.header.stamp = self.stamp
+        pub_image.header.frame_id = frame_id
+        pub_image.header.stamp = stamp
         self.image_pub.publish(pub_image)
     
     def round2nearest_multiple(self, x, p):
@@ -218,10 +244,6 @@ if __name__ == '__main__':
                         help='number of classes')
     parser.add_argument('--batch_size', default=1, type=int,
                         help='batchsize. current only supports 1')
-    parser.add_argument('--imgSize', default=[300, 400, 500, 600],
-                        nargs='+', type=int,
-                        help='list of input image sizes.'
-                             'for multiscale testing, e.g. 300 400 500')
     parser.add_argument('--imgMaxSize', default=1000, type=int,
                         help='maximum input image size of long edge')
     parser.add_argument('--padding_constant', default=8, type=int,

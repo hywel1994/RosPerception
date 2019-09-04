@@ -15,21 +15,21 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	nh_(nh),
 	private_nh_(private_nh),
 	pcl_in_(new VPointCloud),
-	pcl_ground_plane_(new VPointCloud),
-	pcl_ground_plane_inliers_(new VPointCloud),
-	pcl_ground_plane_outliers_(new VPointCloud),
+	// pcl_ground_plane_(new VPointCloud),
+	// pcl_ground_plane_inliers_(new VPointCloud),
+	// pcl_ground_plane_outliers_(new VPointCloud),
 	pcl_ground_(new VPointCloud),
 	pcl_elevated_(new VPointCloud),
-	pcl_voxel_ground_(new VPointCloud),
-	pcl_voxel_elevated_(new VPointCloud),
+	// pcl_voxel_ground_(new VPointCloud),
+	// pcl_voxel_elevated_(new VPointCloud),
 	pcl_semantic_(new VRGBPointCloud),
 	pcl_sparse_semantic_(new VRGBPointCloud),
 	//cloud_sub_(nh, "/kitti/velo/pointcloud", 2),
 	//image_sub_(nh,	"/kitti/camera_color_left/image_raw", 2),
-	// cloud_sub_(nh, "/velo/pointcloud", 2),
-	// image_sub_(nh,	"/pointgrey/image_raw", 2),
-	cloud_sub_(nh, "/velodyne_points2", 2),
-	image_sub_(nh,	"/camera/image_raw", 2),
+	cloud_sub_(nh, "/velodyne_point/cloud", 2),
+	image_sub_(nh,	"/image_raw/image", 2),
+	// cloud_sub_(nh, "/velodyne_points2", 2),
+	// image_sub_(nh,	"/camera/image_raw", 2),
 	
 	segmentaion_image_sub_(nh,	"/semantic_segmentation/image", 2),
 	sync_(MySyncPolicy(10), cloud_sub_, image_sub_, segmentaion_image_sub_){
@@ -148,23 +148,23 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	// Define Publisher 
 	cloud_filtered_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/filtered", 2);
-	cloud_ground_plane_inliers_pub_ = nh_.advertise<PointCloud2>(
-		"/sensor/cloud/groundplane/inliers", 2);
-	cloud_ground_plane_outliers_pub_ = nh_.advertise<PointCloud2>(
-		"/sensor/cloud/groundplane/outliers", 2);
+	// cloud_ground_plane_inliers_pub_ = nh_.advertise<PointCloud2>(
+	// 	"/sensor/cloud/groundplane/inliers", 2);
+	// cloud_ground_plane_outliers_pub_ = nh_.advertise<PointCloud2>(
+	// 	"/sensor/cloud/groundplane/outliers", 2);
 	cloud_ground_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/ground", 2);
 	cloud_elevated_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/elevated", 2);
-	voxel_ground_pub_ = nh_.advertise<PointCloud2>(
-		"/sensor/voxel/ground", 2);
-	voxel_elevated_pub_ = nh_.advertise<PointCloud2>(
-		"/sensor/voxel/elevated", 2);
+	// voxel_ground_pub_ = nh_.advertise<PointCloud2>(
+	// 	"/sensor/voxel/ground", 2);
+	// voxel_elevated_pub_ = nh_.advertise<PointCloud2>(
+	// 	"/sensor/voxel/elevated", 2);
 	grid_occupancy_pub_ = nh_.advertise<OccupancyGrid>(
 		"/sensor/grid/occupancy", 2);
 
-	image_semantic_pub_ = nh_.advertise<Image>(
-		"/sensor/image/semantic", 2);
+	// image_semantic_pub_ = nh_.advertise<Image>(
+	// 	"/sensor/image/semantic", 2);
 	cloud_semantic_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/semantic", 2);
 	cloud_semantic_sparse_pub_ = nh_.advertise<PointCloud2>(
@@ -226,7 +226,6 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 
 	// Convert input cloud
 	pcl::fromROSMsg(*cloud, *pcl_in_);
-
 	// Define point_cloud_inliers and indices
 	pcl::PointIndices::Ptr pcl_inliers(new pcl::PointIndices());
 	pcl::ExtractIndices<VPoint> pcl_extractor;
@@ -237,37 +236,27 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 
 	// Loop through input point cloud
 	for(int i = 0; i < pcl_in_->size(); ++i){
-
 		// Read current point
 		VPoint & point = pcl_in_->at(i);
-
 		// Determine angle of lidar point and check
 		float angle = std::abs( std::atan2(point.y, point.x) );
 		if(angle < params_.lidar_opening_angle){
-
 			// Determine range of lidar point and check
 			float range = std::sqrt(point.x * point.x + point.y * point.y);
 			if(range > params_.grid_range_min &&
 				range < params_.grid_range_max){
-
 				// Check height of lidar point
 				if(point.z > params_.lidar_z_min){
-
 					// Add index for filtered point cloud
 					pcl_inliers->indices.push_back(i);
-
 					// Buffer variables
 					int seg, bin;
-
 					// Get polar grid cell indices
 					fromVeloCoordsToPolarCell(point.x, point.y, seg, bin);
-
 					// Grab cell
 					PolarCell & cell = polar_grid_[seg][bin];
-
 					// Increase count
 					cell.count++;
-
 					// Update min max
 					if(cell.count == 1){
 						cell.x_min = point.x;
@@ -302,144 +291,50 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 	cloud_filtered_pub_.publish(pcl_in_);
 
 /******************************************************************************
- * 2. Ground plane estimation and dividing point cloud in elevated and ground
-*/
-
-/* 
-	// Clear ground plane points
-	pcl_ground_plane_->points.clear();
-
-	// Loop over polar grid
-	for(int i = 0; i < params_.grid_segments; ++i){
-		for(int j = 0; j < params_.grid_bins; ++j){
-
-			// Grab cell
-			PolarCell & cell = polar_grid_[i][j];
-
-			// Check if cell can be ground cell
-			if(cell.count > 0 &&
-				(cell.z_max - cell.z_min < params_.grid_cell_height)){
-
-				// Push back cell attributes to ground plane cloud
-				pcl_ground_plane_->points.push_back(
-					VPoint(cell.x_min, cell.y_min, cell.z_min));
-			}
-		}
-	}
-
-	// Estimate the ground plane using PCL and RANSAC
-	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-	pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-
-	// Create the segmentation object
-	pcl::SACSegmentation<VPoint> segmentation;
-	segmentation.setOptimizeCoefficients(true);
-	segmentation.setModelType(pcl::SACMODEL_PLANE);
-	segmentation.setMethodType(pcl::SAC_RANSAC);
-	segmentation.setDistanceThreshold(params_.ransac_tolerance);
-	segmentation.setMaxIterations(params_.ransac_iterations);
-	segmentation.setInputCloud(pcl_ground_plane_->makeShared());
-	segmentation.segment(*inliers, *coefficients);
-
-	// Divide ground plane cloud in inlier cloud and outlier cloud
-	pcl_extractor.setInputCloud(pcl_ground_plane_);
-	pcl_extractor.setIndices(inliers);
-	pcl_extractor.setNegative(false);
-	pcl_extractor.filter(*pcl_ground_plane_inliers_);
-
-	pcl_extractor.setInputCloud(pcl_ground_plane_);
-	pcl_extractor.setIndices(inliers);
-	pcl_extractor.setNegative(true);
-	pcl_extractor.filter(*pcl_ground_plane_outliers_);
-
-	// Sanity check
-	if(inliers->indices.empty() || coefficients->values[3] > 2 || 
-		coefficients->values[3] < 1.5){
-		ROS_WARN("Bad ground plane estimation! # Ransac Inliers [%d] # Lidar "
-			"height [%f]", int(inliers->indices.size()),
-			coefficients->values[3]);
-	}
-
-	// Publish ground plane inliers and outliers point cloud
-	pcl_ground_plane_inliers_->header.frame_id = cloud->header.frame_id;
-	pcl_ground_plane_inliers_->header.stamp = 
-		pcl_conversions::toPCL(cloud->header.stamp);
-	cloud_ground_plane_inliers_pub_.publish(pcl_ground_plane_inliers_);
-
-	pcl_ground_plane_outliers_->header.frame_id = cloud->header.frame_id;
-	pcl_ground_plane_outliers_->header.stamp = 
-		pcl_conversions::toPCL(cloud->header.stamp);
-	cloud_ground_plane_outliers_pub_.publish(pcl_ground_plane_outliers_);
-
-	// Print
-	ROS_INFO("Ground plane estimation [%d] # Points [%d] # Inliers [%d] "
-		" C [%f][%f][%f][%f]",	time_frame_, 
-		int(pcl_ground_plane_->size()),	int(pcl_ground_plane_inliers_->size()), 
-		coefficients->values[0], coefficients->values[1],
-		coefficients->values[2], coefficients->values[3]);
- */
-
-/******************************************************************************
  * 3. Evaluate segments of polar grid to fill with unknown, free or occupied
  */
 	
 	// Loop over segments
 	for(int s = 0; s < params_.grid_segments; s++){
-
 		// Set hit to false
 		bool hit = false;
-
 		// Loop over bins
 		for(int b = 0; b < params_.grid_bins; b++){
-		
 			// Grab cell
 			PolarCell & cell = polar_grid_[s][b];
-
 			// Buffer variables
 			float x,y;
-
 			// Get velodyne coodinates
 			fromPolarCellToVeloCoords(s, b, x, y);
-
 			// Get ground height
 			// TODO set min z or surface
-			cell.ground = 0; 
+			cell.ground = params_.lidar_z_min; 
 			//  (-coefficients->values[0] * x -
 			// 	coefficients->values[1] * y - coefficients->values[3]) /
 			// 	coefficients->values[2];
-
 			// If cell is not filled
 			if(cell.count == 0){
-
 				// And has hit sth so far mark as unknown
 				if(hit)
 					cell.idx = PolarCell::UNKNOWN;
-
 				// And has not hit sth so far mark as free
 				else
 					cell.idx = PolarCell::FREE;
-
 				continue;
 			}
 			else{
-
 				// Calculate cell height 
 				cell.height = polar_grid_[s][b].z_max - cell.ground;
-
 				// If cell height big enough fill cell as occupied
 				if(cell.height > params_.grid_cell_height){
-
 					cell.idx = PolarCell::OCCUPIED;
-
 					// Mark segment as hit
 					hit = true;
 				}
 				else{
-					
 					// And has hit sth so far mark as unknown
 					if(hit)
 						cell.idx = PolarCell::UNKNOWN;
-
 					// And has not hit sth so far mark as free
 					else
 						cell.idx = PolarCell::FREE;
@@ -453,16 +348,12 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 	pcl_elevated_->points.clear();
 
 	for(int i = 0; i < pcl_in_->size(); ++i){
-
 		// Read current point
 		VPoint point = pcl_in_->at(i);
-
 		// Buffer variables
 		int seg, bin;
-
 		// Get polar grid cell indices
 		fromVeloCoordsToPolarCell(point.x, point.y, seg, bin);
-
 		// Grab cell
 		PolarCell & cell = polar_grid_[seg][bin];
 
@@ -488,8 +379,8 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
  * 4. Map polar grid back to cartesian occupancy grid
  */
 	// Clear voxel pcls
-	pcl_voxel_elevated_->points.clear();
-	pcl_voxel_ground_->points.clear();
+	// pcl_voxel_elevated_->points.clear();
+	// pcl_voxel_ground_->points.clear();
 
 	// Init detection image and fill free space grid cells
 	detection_grid_ = cv::Mat(params_.grid_height, params_.grid_width, CV_32FC3,
@@ -504,19 +395,14 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 
 			// Buffer variables
 			int seg, bin;
-
 			// Get polar grid cell indices
 			fromVeloCoordsToPolarCell(x, y, seg, bin);
-			
 			// Grab polar cell
 			PolarCell & cell = polar_grid_[seg][bin];
-
 			// Fill ground voxel cloud
-			pcl_voxel_ground_->points.push_back( VPoint(x, y, cell.ground) );
-
+			// pcl_voxel_ground_->points.push_back( VPoint(x, y, cell.ground) );
 			// Calculate occupancy grid cell index
 			int cell_index = j * params_.grid_width + i;
-
 			// If cell is free
 			if(cell.idx == PolarCell::FREE){
 				occ_grid_->data[cell_index] = 0;
@@ -529,28 +415,9 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 			// If cell is occupied
 			else{
 				occ_grid_->data[cell_index] = 100;
-
-				// Fill elevated voxel cloud
-				for(float v = cell.ground; v < cell.z_max; 
-					v += params_.grid_cell_size){
-						pcl_voxel_elevated_->points.push_back(
-							VPoint(x, y, v));
-				}
 			}
 		}
 	}
-
-	// Publish voxel ground
-	pcl_voxel_ground_->header.frame_id = cloud->header.frame_id;
-	pcl_voxel_ground_->header.stamp = 
-		pcl_conversions::toPCL(cloud->header.stamp);
-	voxel_ground_pub_.publish(pcl_voxel_ground_);
-
-	// Publish voxel elevated
-	pcl_voxel_elevated_->header.frame_id = cloud->header.frame_id;
-	pcl_voxel_elevated_->header.stamp = 
-		pcl_conversions::toPCL(cloud->header.stamp);
-	voxel_elevated_pub_.publish(pcl_voxel_elevated_);
 
 	// Publish occupancy grid
 	occ_grid_->header.stamp = cloud->header.stamp;
@@ -560,47 +427,6 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 }
 
 void SensorFusion::processImage(const Image::ConstPtr & image){
-
-/******************************************************************************
- * 1. Load precalculated semantic segmentated images to ensure online
- * performance
- */
-	// cv::Mat sem_image_2;
-	// // Define path
-	// std::ostringstream path_name;
-
-	// // HARDCODE HOME DIRECTORY HERE
-	// path_name << params_.home_dir << "/"
-	// 	<< params_.scenario 
-	// 	<< "/segmented_semantic_images/"
-	// 	<< std::setfill('0') << std::setw(10)	<< time_frame_ << ".png";
-
-	// // Load semantic segmentated image
-	// sem_image_2 = cv::imread(path_name.str(), CV_LOAD_IMAGE_COLOR);
-
-	// // Sanity check if image is loaded correctly
-	// if(sem_image_2.cols == 0 || sem_image_2.rows == 0){
-	// 	ROS_WARN("Hardcode path in sensor_fusion.cpp processImage()!");
-	// 	return;
-	// }
-
-	// // Canny edge detection
-	// /*
-	// cv::Mat sem_edge_img, sem_dil_img, sem_output;
-	// if(params_.sem_ed){
-	// 	cv::Canny(sem_image_, sem_edge_img, params_.sem_ed_min,
-	// 		params_.sem_ed_max, params_.sem_ed_kernel);
-	// 	cv::dilate(sem_edge_img, sem_dil_img, cv::Mat(), 
-	// 		cv::Point(-1, -1), 1, 1, 1);
-	// 	sem_image_.copyTo(sem_output, sem_dil_img);
-	// }
-	// */
-	// // Publish
-	// cv_bridge::CvImage cv_semantic_image;
-	// cv_semantic_image.image = sem_image_2;
-	// cv_semantic_image.encoding = "bgr8";
-	// cv_semantic_image.header.stamp = image->header.stamp;
-	// image_semantic_pub_.publish(cv_semantic_image.toImageMsg());
 
 	cv_bridge::CvImagePtr cv_ptr;
 	try

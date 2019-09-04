@@ -1,10 +1,10 @@
 grid:
   range:
-    min: 3.0
+    min: 0
     max: 83.0
   cell:
     size: 0.25
-    height: 0.15
+    height: 1
   segments: 240
 
 semantic:
@@ -19,5 +19,5 @@ ransac:
   iterations: 50
 
 lidar:
-  height: -1.73
-  z_min: -2.4
+  height: 0.5
+  z_min: -1

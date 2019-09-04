@@ -38,10 +38,10 @@ struct Parameter{
 	float grid_range_max;
 	float grid_cell_size;
 
-	ObjectAttributes car_spawn;
-	ObjectAttributes car_update;
-	ObjectAttributes ped_spawn;
-	ObjectAttributes ped_update;
+	ObjectAttributes boat_spawn;
+	ObjectAttributes boat_update;
+	ObjectAttributes scu_spawn;
+	ObjectAttributes scu_update;
 };
 
 // Semantic information of a cluster
@@ -133,12 +133,11 @@ private:
 	void filterClusters(const cv::Mat grid);
 	void fillObjectList();
 	void addObject(const Cluster & c);
-	bool spawnPed(const Cluster & c);
-	bool spawnCar(const Cluster & c);
-	bool updatePed(const Cluster & c);
-	bool updateCar(const Cluster & c);
+	bool spawnScu(const Cluster & c);
+	bool spawnBoat(const Cluster & c);
+	bool updateScu(const Cluster & c);
+	bool updateBoat(const Cluster & c);
 	bool isValidSemantic(const int semantic_class);
-	bool isKittiValidSemantic(const int semantic_class);
 	void printCluster(const Cluster & c);
 	void printObject(const Object & o);
 

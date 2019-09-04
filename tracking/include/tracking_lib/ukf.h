@@ -25,10 +25,10 @@ using namespace Eigen;
 
 struct Parameter{
 
-	float da_ped_dist_pos;
-	float da_ped_dist_form;
-	float da_car_dist_pos;
-	float da_car_dist_form;
+	float da_scu_dist_pos;
+	float da_scu_dist_form;
+	float da_boat_dist_pos;
+	float da_boat_dist_form;
 
 	int tra_dim_z;
 	int tra_dim_x;
