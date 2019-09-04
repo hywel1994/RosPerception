@@ -376,6 +376,7 @@ void DbScan::filterClusters(const cv::Mat grid){
 		// }
 
 		if(updateScu(c)){
+			c.is_new_track = true;
 			addObject(c);
 		}
 		// addObject(c);
@@ -432,7 +433,7 @@ void DbScan::addObject(const Cluster & c){
 	object.id = c.id;
 
 	// Pose in velo frame
-	object.velo_pose.header.frame_id = "lidar";
+	object.velo_pose.header.frame_id = "velodyne";
 	object.velo_pose.point.x = c.geometric.x;
 	object.velo_pose.point.y = c.geometric.y;
 	object.velo_pose.point.z = c.geometric.z;

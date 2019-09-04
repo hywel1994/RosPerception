@@ -20,4 +20,4 @@ ransac:
 
 lidar:
   height: 0.5
-  z_min: -1
+  z_min: -2

@@ -11,26 +11,46 @@ import message_filters
 
 
 class synchronizer:
-    def __init__(self):
+    def __init__(self, rate=10):
         # self.pub_Image = rospy.Publisher('image_raw_sync', SesnorImage, queue_size=1)
         # self.pub_Cam_Info = rospy.Publisher('camera_info_sync', CameraInfo, queue_size=1)
         # self.pub_Lidar = rospy.Publisher('rslidar_points_sync', PointCloud2, queue_size=1)
-        self.imuInput = message_filters.Subscriber("/imu", Imu)
-        self.gpsInput = message_filters.Subscriber('/gps/fix', NavSatFix)
+        self.imuInput = rospy.Subscriber("/imu", Imu,  self.imuCallback, queue_size=2)
+        self.gpsInput = rospy.Subscriber('/gps', NavSatFix, self.gpsCallback, queue_size=2)
 
-        self.ts = message_filters.TimeSynchronizer([self.imuInput
-                                                    , self.gpsInput
-                                                    ], 10)
-        self.ts.registerCallback(self.general_callback)
+        # self.ts = message_filters.TimeSynchronizer([self.imuInput
+        #                                             , self.gpsInput
+        #                                             ], 10)
+        # self.ts.registerCallback(self.general_callback)
         self.br_boat_world = tf.TransformBroadcaster()
         self.br_lidar_boat = tf.TransformBroadcaster()
         self.br_lidar_boat2 = tf.TransformBroadcaster()
         self.br_camera_boat = tf.TransformBroadcaster()
         self._imu_raw = Imu()
         self._gps_raw = NavSatFix()
-        
+        self.imuflag = False
+        self.gpsflag = False
 
-        
+        rate = rospy.Rate(rate)
+
+        while not rospy.is_shutdown():
+            if self.imuflag and self.gpsflag:
+                print ('process')
+                self.general_callback(self.imu_msg, self.gps_msg)
+                self.imuflag = False
+                self.gpsflag = False
+
+            rate.sleep()
+
+            
+    def imuCallback(self, imu_msg):
+        self.imu_msg = imu_msg
+        self.imuflag = True
+    
+    def gpsCallback(self, gps_msg):
+        self.gps_msg = gps_msg
+        self.gpsflag = True
+
     def general_callback(self, imu_raw, gps_raw):
         print ('pub tf tree')
         self._imu_raw = imu_raw
