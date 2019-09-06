@@ -86,6 +86,7 @@ struct Track{
 
 	// Attributes
 	int id;
+	
 	State sta;
 	Geometry geo;
 	Semantic sem;
@@ -94,6 +95,9 @@ struct Track{
 	int g;
 	int b;
 	float prob_existence;
+
+	// int * class_num;
+	std::vector<float> class_num;
 };
 
 class UnscentedKF{
@@ -160,6 +164,8 @@ private:
 	float CalculateBoxMismatch(const Track & track, const Object & object);
 	float CalculateEuclideanAndBoxOffset(const Track & track, 
 		const Object & object);
+	
+	float CalculateDistance(const Track & track1, const Track & track2);
 };
 
 } // namespace tracking

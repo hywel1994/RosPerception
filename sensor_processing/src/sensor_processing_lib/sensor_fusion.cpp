@@ -34,26 +34,7 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	segmentaion_image_sub_(nh,	"/semantic_segmentation/image", 2),
 	sync_(MySyncPolicy(10), cloud_sub_, image_sub_, segmentaion_image_sub_){
 
-	// Get data path
-	/* 
-	std::string home_dir;
-	if(ros::param::get("~home_dir", home_dir)){
-		params_.home_dir = home_dir + "/kitti_data";
-	}
-	else{
-		ROS_ERROR("Set dataset path as parameter");
-	}
 
-	// Get scenario parameter
-	int scenario;
-	if(ros::param::get("~scenario", scenario)){
-		std::ostringstream scenario_stream;
-		scenario_stream << std::setfill('0') << std::setw(4) << scenario;
-		params_.scenario = scenario_stream.str();
-	}
-	else{
-		ROS_ERROR("Failed to read scenario");
-	} */
 
 	tools_ = new Tools(false);
 
@@ -62,7 +43,8 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 		params_.lidar_height);
 	private_nh_.param("lidar/z_min", params_.lidar_z_min,
 		params_.lidar_z_min);
-	params_.lidar_opening_angle = M_PI / 4;
+	// change 
+	params_.lidar_opening_angle = M_PI ;
 
 	// Define grid parameters
 	private_nh_.param("grid/range/min", params_.grid_range_min,
@@ -75,28 +57,28 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 		params_.grid_cell_height);
 	private_nh_.param("grid/segments", params_.grid_segments,
 		params_.grid_segments);
-	params_.grid_height = params_.grid_range_max / params_.grid_cell_size ;
-	params_.grid_width = params_.grid_height * 2;
+	params_.grid_height = params_.grid_range_max / params_.grid_cell_size*2;
+	params_.grid_width = params_.grid_height;
 	params_.grid_bins = (params_.grid_range_max * std::sqrt(2)) /
 		params_.grid_cell_size + 1;
 
 	// Define semantic parameters
-	private_nh_.param("semantic/edge_detection/perform", params_.sem_ed,
-		params_.sem_ed);
-	private_nh_.param("semantic/edge_detection/min", params_.sem_ed_min,
-		params_.sem_ed_min);
-	private_nh_.param("semantic/edge_detection/max", params_.sem_ed_max,
-		params_.sem_ed_max);
-	private_nh_.param("semantic/edge_detection/kernel", params_.sem_ed_kernel,
-		params_.sem_ed_kernel);
+	// private_nh_.param("semantic/edge_detection/perform", params_.sem_ed,
+	// 	params_.sem_ed);
+	// private_nh_.param("semantic/edge_detection/min", params_.sem_ed_min,
+	// 	params_.sem_ed_min);
+	// private_nh_.param("semantic/edge_detection/max", params_.sem_ed_max,
+	// 	params_.sem_ed_max);
+	// private_nh_.param("semantic/edge_detection/kernel", params_.sem_ed_kernel,
+	// 	params_.sem_ed_kernel);
 	// Define ransac ground plane parameters
-	private_nh_.param("ransac/tolerance", params_.ransac_tolerance,
-		params_.ransac_tolerance);
-	private_nh_.param("ransac/iterations", params_.ransac_iterations,
-		params_.ransac_iterations);
+	// private_nh_.param("ransac/tolerance", params_.ransac_tolerance,
+	// 	params_.ransac_tolerance);
+	// private_nh_.param("ransac/iterations", params_.ransac_iterations,
+	// 	params_.ransac_iterations);
 
 	// Define static conversion values
-	params_.inv_angular_res = 2 * params_.grid_segments / M_PI;
+	params_.inv_angular_res = params_.grid_segments / (2*M_PI);
 	params_.inv_radial_res = 1.0f / params_.grid_cell_size;
 
 	// Print parameters
@@ -111,8 +93,6 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	ROS_INFO_STREAM("grid_cell_height " << params_.grid_cell_height);
 	ROS_INFO_STREAM("grid_bins " << params_.grid_bins);
 	ROS_INFO_STREAM("grid_segments " << params_.grid_segments);
-	ROS_INFO_STREAM("ransac_tolerance " << params_.ransac_tolerance);
-	ROS_INFO_STREAM("ransac_iterations " << params_.ransac_iterations);
 	ROS_INFO_STREAM("inv_angular_res " << params_.inv_angular_res);
 	ROS_INFO_STREAM("inv_radial_res " << params_.inv_radial_res);
 
@@ -135,36 +115,27 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	occ_grid_->info.origin.orientation.z = 0;
 
 	// Init occupancy grid
-	for(int j = 0; j < params_.grid_height; ++j){
-		for(int i = 0; i < params_.grid_width; ++i){
+	// for(int j = 0; j < params_.grid_height; ++j){
+	// 	for(int i = 0; i < params_.grid_width; ++i){
 
 			// Never reach this cells because of opening angle
-			if(i < j || i >= params_.grid_width - j){
-				occ_grid_->data[j * params_.grid_width + i] = -1;
-			}			
-		}
-	}
+
+			// TODO check
+			// if(i < j || i >= params_.grid_width - j){
+			// 	occ_grid_->data[j * params_.grid_width + i] = -1;
+			// }			
+	// 	}
+	// }
 
 	// Define Publisher 
 	cloud_filtered_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/filtered", 2);
-	// cloud_ground_plane_inliers_pub_ = nh_.advertise<PointCloud2>(
-	// 	"/sensor/cloud/groundplane/inliers", 2);
-	// cloud_ground_plane_outliers_pub_ = nh_.advertise<PointCloud2>(
-	// 	"/sensor/cloud/groundplane/outliers", 2);
 	cloud_ground_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/ground", 2);
 	cloud_elevated_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/elevated", 2);
-	// voxel_ground_pub_ = nh_.advertise<PointCloud2>(
-	// 	"/sensor/voxel/ground", 2);
-	// voxel_elevated_pub_ = nh_.advertise<PointCloud2>(
-	// 	"/sensor/voxel/elevated", 2);
 	grid_occupancy_pub_ = nh_.advertise<OccupancyGrid>(
 		"/sensor/grid/occupancy", 2);
-
-	// image_semantic_pub_ = nh_.advertise<Image>(
-	// 	"/sensor/image/semantic", 2);
 	cloud_semantic_pub_ = nh_.advertise<PointCloud2>(
 		"/sensor/cloud/semantic", 2);
 	cloud_semantic_sparse_pub_ = nh_.advertise<PointCloud2>(
@@ -205,6 +176,8 @@ void SensorFusion::process(
 	// image
 	mapPointCloudIntoImage(pcl_elevated_, image);
 
+	// ROS_INFO("finsh mapPointCloudIntoImage");
+
 	// Print sensor fusion
 	ROS_INFO("Publishing Sensor Fusion [%d]: # PCL points [%d] # Ground [%d]"
 		" # Elevated [%d] # Semantic [%d] # Sparse Semantic [%d]", time_frame_,
@@ -223,6 +196,8 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
  * 1. Filter point cloud to only consider points in the front that can also be
  * found in image space.
  */
+	// ROS_INFO("start processPointCloud");
+
 
 	// Convert input cloud
 	pcl::fromROSMsg(*cloud, *pcl_in_);
@@ -239,8 +214,8 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 		// Read current point
 		VPoint & point = pcl_in_->at(i);
 		// Determine angle of lidar point and check
-		float angle = std::abs( std::atan2(point.y, point.x) );
-		if(angle < params_.lidar_opening_angle){
+		// float angle = std::abs( std::atan2(point.y, point.x) );
+		// if(angle < params_.lidar_opening_angle){
 			// Determine range of lidar point and check
 			float range = std::sqrt(point.x * point.x + point.y * point.y);
 			if(range > params_.grid_range_min &&
@@ -252,8 +227,11 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 					// Buffer variables
 					int seg, bin;
 					// Get polar grid cell indices
+					// ROS_INFO("start fromVeloCoordsToPolarCell");
 					fromVeloCoordsToPolarCell(point.x, point.y, seg, bin);
 					// Grab cell
+
+					// ROS_INFO("start seg: [%d], bin: [%d]", seg, bin);
 					PolarCell & cell = polar_grid_[seg][bin];
 					// Increase count
 					cell.count++;
@@ -276,8 +254,11 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 					}
 				}
 			}
-		}
+		// }
 	}
+
+	// ROS_INFO("finsh Filter point ");
+
 
 	// Extract points from original point cloud
 	pcl_extractor.setInputCloud(pcl_in_);
@@ -303,9 +284,9 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 			// Grab cell
 			PolarCell & cell = polar_grid_[s][b];
 			// Buffer variables
-			float x,y;
+			// float x,y;
 			// Get velodyne coodinates
-			fromPolarCellToVeloCoords(s, b, x, y);
+			// fromPolarCellToVeloCoords(s, b, x, y);
 			// Get ground height
 			// TODO set min z or surface
 			cell.ground = params_.lidar_z_min; 
@@ -342,6 +323,8 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 			}
 		}	
 	}
+
+	// ROS_INFO("finsh Evaluate segments");
 
 	// Divide filtered point cloud in elevated and ground
 	pcl_ground_->points.clear();
@@ -388,9 +371,9 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 
 	// Go through cartesian grid
 	float x = params_.grid_range_max - params_.grid_cell_size / 2;
-	for(int j = 0; j < params_.grid_height; ++j, x -= params_.grid_cell_size){
-		float y = x;
-		for(int i = j; i < params_.grid_width - j; ++i,
+	for(int j = 0; j < params_.grid_height ; ++j, x -= params_.grid_cell_size){
+		float y = params_.grid_range_max - params_.grid_cell_size / 2;
+		for(int i = 0; i < params_.grid_width ; ++i,
 			y -= params_.grid_cell_size){
 
 			// Buffer variables
@@ -418,6 +401,8 @@ void SensorFusion::processPointCloud(const PointCloud2::ConstPtr & cloud){
 			}
 		}
 	}
+
+	// ROS_INFO("finsh Map polar grid");
 
 	// Publish occupancy grid
 	occ_grid_->header.stamp = cloud->header.stamp;
@@ -515,6 +500,22 @@ void SensorFusion::mapPointCloudIntoImage(const VPointCloud::Ptr cloud,
 			point.g = g;
 			point.b = b;
 
+			// Push back point
+			pcl_semantic_->points.push_back(point);
+		}
+		else{
+			uint8_t r = 0;
+			uint8_t g = 0;
+			uint8_t b = 0;
+
+			// Create new point and fill it
+			VRGBPoint point;
+			point.x = cloud->points[i].x;
+			point.y = cloud->points[i].y;
+			point.z = cloud->points[i].z;
+			point.r = r;
+			point.g = g;
+			point.b = b;
 			// Push back point
 			pcl_semantic_->points.push_back(point);
 		}
@@ -645,8 +646,9 @@ void SensorFusion::fromVeloCoordsToPolarCell(const float x, const float y,
 	bin = int(mag * params_.inv_radial_res);
 
 	// For last segment
-	if(x == -y)
-		seg = params_.grid_segments - 1;
+	// TODO check
+	// if(x == -y)
+	// 	seg = params_.grid_segments - 1;
 }
 
 void SensorFusion::fromPolarCellToVeloCoords(const int seg, const int bin,
@@ -661,16 +663,16 @@ void SensorFusion::fromPolarCellToVeloCoords(const int seg, const int bin,
 void SensorFusion::fromVeloCoordsToCartesianCell(const float x, const float y,
 		int & grid_x, int & grid_y){
 
-	grid_y = params_.grid_height - x / params_.grid_cell_size;
-	grid_x = - y / params_.grid_cell_size + params_.grid_height;
+	grid_y = params_.grid_height / 2 - x / params_.grid_cell_size;
+	grid_x = - y / params_.grid_cell_size + params_.grid_height / 2;
 }
 
 void SensorFusion::fromCartesianCellToVeloCoords(const int grid_x,
 	const int grid_y, float & x, float & y){
 
-	x = (params_.grid_height - grid_y) * params_.grid_cell_size - 
+	x = (params_.grid_height / 2 - grid_y) * params_.grid_cell_size - 
 		params_.grid_cell_size / 2;
-	y = (params_.grid_height - grid_x) * params_.grid_cell_size -
+	y = (params_.grid_height / 2 - grid_x) * params_.grid_cell_size -
 		params_.grid_cell_size / 2;
 }
 

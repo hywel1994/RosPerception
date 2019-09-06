@@ -78,6 +78,30 @@ Tools::Tools(bool is_kitti){
 			2; // Bicycle
 	}
 	else{
+		if (true){
+			TRANS_VELO_TO_CAM = MatrixXf::Zero(4, 4);
+			TRANS_VELO_TO_CAM << 
+				0, -1,  0, 0,
+				0,  0, -1, -0.1, // camera height
+				1,  0,  0, 0,  
+				0,  0,  0, 0;
+
+
+			TRANS_CAM_TO_RECTCAM = MatrixXf::Zero(4, 4);
+			TRANS_CAM_TO_RECTCAM << 
+					1,0,0,0,
+					0,1,0,0,
+					0,0,1,0,
+					0,0,0,1;
+
+			TRANS_RECTCAM_TO_IMAGE = MatrixXf::Zero(3, 4);
+			TRANS_RECTCAM_TO_IMAGE << 
+				554.3058945215134, 0.0, 320.5, -38.80141261650594, 
+				0.0, 554.3058945215134, 240.5, 0.0, 
+				0.0, 0.0, 1.0, 0.0;
+		}
+		else
+		{
 	// Fill transformation matrices
 		TRANS_VELO_TO_CAM = MatrixXf::Zero(4, 4);
 		TRANS_VELO_TO_CAM << 
@@ -103,7 +127,7 @@ Tools::Tools(bool is_kitti){
 			0.000000, 1778.096191, 377.328255, 0.000000, 
 			0.000000, 0.000000, 1.000000, 0.000000;
 
-
+		}
 		SEMANTIC_NAMES = std::vector<std::string>{
 			"wall",
 			"building;edifice",
@@ -254,8 +278,8 @@ Tools::Tools(bool is_kitti){
 			"radiator",
 			"glass;drinking;glass",
 			"clock",
-			"flag"
-
+			"flag",
+			"unkown",
 		};
 
 		SEMANTIC_COLOR_TO_CLASS_VECTOR = std::map<std::vector<int>, int>{
@@ -408,9 +432,10 @@ Tools::Tools(bool is_kitti){
 				{{255, 214, 0}, 146},
 				{{25, 194, 194}, 147},
 				{{102, 255, 0}, 148},
-				{{92, 0, 255}, 149}};
+				{{92, 0, 255}, 149},
+				{{0, 0, 0}, 150}};
 		
-		SEMANTIC_CLASS_TO_COLOR = MatrixXi::Zero(150, 3);
+		SEMANTIC_CLASS_TO_COLOR = MatrixXi::Zero(151, 3);
 		SEMANTIC_CLASS_TO_COLOR <<
 				120, 120, 120,	//360	wall
 				180, 120, 120,	//420	building;edifice
@@ -561,10 +586,11 @@ Tools::Tools(bool is_kitti){
 				255, 214, 0, 	//
 				25, 194, 194, 	//
 				102, 255, 0, 	//
-				92, 0, 255; 	//
+				92, 0, 255,
+				0, 0, 0; 	//
 
 
-		SEMANTIC_KERNEL_SIZE = VectorXi::Zero(150);	
+		SEMANTIC_KERNEL_SIZE = VectorXi::Zero(151);	
 		SEMANTIC_KERNEL_SIZE <<
 			5,
 			5,
@@ -715,8 +741,8 @@ Tools::Tools(bool is_kitti){
 			5,
 			5,
 			5,
+			5,
 			5;
-
 	}
 	
 }

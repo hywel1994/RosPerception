@@ -1,18 +1,18 @@
 grid:
   range:
     min: 0
-    max: 83.0
+    max: 40.0
   cell:
-    size: 0.25
-    height: 1
-  segments: 240
+    size: 0.2
+    height: 0.2
+  segments: 720
 
-semantic:
-  edge_detection:
-    perform: false
-    min: 5
-    max: 120
-    kernel: 3
+# semantic:
+#   edge_detection:
+#     perform: false
+#     min: 5
+#     max: 120
+#     kernel: 3
 
 ransac:
   tolerance: 0.2
@@ -20,4 +20,4 @@ ransac:
 
 lidar:
   height: 0.5
-  z_min: -2
+  z_min: -1

@@ -129,7 +129,7 @@ void UnscentedKF::process(const ObjectArrayConstPtr & detected_objects){
 		double delta_t = time_stamp - last_time_stamp_;
 
 		// Prediction
-	    // Prediction(delta_t);
+	    Prediction(delta_t);
 
 		// Data association
 		GlobalNearestNeighbor(detected_objects);
@@ -249,7 +249,7 @@ void UnscentedKF::Prediction(const double delta_t){
 			track.sta.Xsig_pred(1,j) = py_p;
 			track.sta.Xsig_pred(2,j) = v_p;
 			track.sta.Xsig_pred(3,j) = yaw_p;
-			track.sta.Xsig_pred(4,j) = yawd_p;
+			track.sta.Xsig_pred(4,j) = 0; //yawd_p;
 		}
 
 /******************************************************************************
@@ -309,9 +309,14 @@ void UnscentedKF::GlobalNearestNeighbor(
 		float gate;
 		float box_gate;
 
-
-		gate = params_.da_boat_dist_pos;
-		box_gate = params_.da_boat_dist_form;
+		if(tracks_[i].sem.id == 34){
+			gate = params_.da_scu_dist_pos;
+			box_gate = params_.da_scu_dist_form;
+		}
+		else{
+			gate = params_.da_boat_dist_pos;
+			box_gate = params_.da_boat_dist_form;
+		}
 		// // Pedestrian
 		// if(tracks_[i].sem.id == 11){
 		// 	gate = params_.da_ped_dist_pos;
@@ -330,7 +335,8 @@ void UnscentedKF::GlobalNearestNeighbor(
 		for(int j = 0; j < detected_objects->list.size(); ++j){
 
 			// Calculate distance between track and detected object
-			if(tracks_[i].sem.id == detected_objects->list[j].semantic_id){
+			// TODO need check boat sem id
+			//if(tracks_[i].sem.id == detected_objects->list[j].semantic_id){
 				float dist = CalculateDistance(tracks_[i], 
 					detected_objects->list[j]);
 
@@ -338,7 +344,7 @@ void UnscentedKF::GlobalNearestNeighbor(
 					distances.push_back(dist);
 					matches.push_back(j);
 				}
-			}
+			//}
 		}
 
 		// If track exactly finds one match assign it
@@ -397,6 +403,15 @@ float UnscentedKF::CalculateDistance(const Track & track,
 		abs(track.sta.z - object.world_pose.point.z);
 }
 
+float UnscentedKF::CalculateDistance(const Track & track1,
+	const Track & track2){
+
+	// Calculate euclidean distance in x,y,z coordinates of track and object
+	return abs(track1.sta.x(0) - track2.sta.x(0)) + 
+		abs(track1.sta.x(1) - track2.sta.x(1)) + 
+		abs(track1.sta.z - track2.sta.z);
+}
+
 float UnscentedKF::CalculateBoxMismatch(const Track & track,
 	const Object & object){
 
@@ -446,6 +461,26 @@ void UnscentedKF::Update(const ObjectArrayConstPtr & detected_objects){
 			// Grab measurement
 			z << detected_objects->list[ da_tracks[i] ].world_pose.point.x, 
 				 detected_objects->list[ da_tracks[i] ].world_pose.point.y;
+			
+			int sem_id = detected_objects->list[ da_tracks[i] ].semantic_id;
+
+
+			if (sem_id != 150){
+				track.class_num[sem_id] += 1;
+			}
+			
+			int max_id = std::distance(track.class_num.begin(), std::max_element(track.class_num.begin(), track.class_num.end()));
+			if (track.class_num[max_id] != 0){
+				track.sem.id = max_id;
+				track.sem.confidence = float(track.class_num[max_id]) / std::accumulate(track.class_num.begin(), track.class_num.end(), 0);
+			}
+			else{
+				track.sem.id = 150;
+				track.sem.confidence = 0.5;
+			}
+			
+			
+			
 
 /******************************************************************************
  * 1. Predict measurement
@@ -536,6 +571,8 @@ void UnscentedKF::Update(const ObjectArrayConstPtr & detected_objects){
 				track.sta.P(18), track.sta.P(24)
 			);
 			*/
+
+		    
 		}
 	}
 }
@@ -560,12 +597,26 @@ void UnscentedKF::TrackManagement(const ObjectArrayConstPtr & detected_objects){
 	// Create new ones out of untracked new detected object hypothesis
 	// Initialize tracks
 	for(int i = 0; i < detected_objects->list.size(); ++i){
-
 		// Unassigned object condition
 		if(da_objects[i] == -1){
 
 			// Init new track
 			initTrack(detected_objects->list[i]);
+		}
+	}
+
+	for(int i = 0; i < tracks_.size() ; ++i){
+		Track track;
+		track = tracks_[i]; 
+		for(int j = i+1; j < tracks_.size() ; ++j){
+			float tmp_dis;
+			tmp_dis = CalculateDistance(track, tracks_[j]);
+
+			if (tmp_dis < 1){
+				// Swap track with end of vector and pop back
+				std::swap(tracks_[j],tracks_.back());
+				tracks_.pop_back();
+			}
 		}
 	}
 }
@@ -600,10 +651,7 @@ void UnscentedKF::initTrack(const Object & obj){
 	// Add geometric information
 	tr.geo.width = obj.width;
 	tr.geo.length = obj.length;
-	if(obj.semantic_id == 13)
-		tr.geo.height = 1.4f;
-	else
-		tr.geo.height = obj.height;
+	tr.geo.height = obj.height;
 	tr.geo.orientation = obj.orientation;
 
 	// Add semantic information
@@ -616,6 +664,13 @@ void UnscentedKF::initTrack(const Object & obj){
 	tr.g = rng_.uniform(0, 255);
 	tr.b = rng_.uniform(0, 255);
 	tr.prob_existence = 0.6f;
+
+	// int * class_num;
+	tr.class_num.resize(150,0);
+	if (obj.semantic_id != 150){
+		tr.class_num[obj.semantic_id] += obj.semantic_confidence;
+	}
+	
 	
 	// Push back to track list
 	tracks_.push_back(tr);
@@ -645,7 +700,7 @@ void UnscentedKF::publishTracks(const std_msgs::Header & header){
 			listener_.transformPoint("camera",
 				track_msg.world_pose,
 				track_msg.cam_pose);
-			listener_.transformPoint("lidar",
+			listener_.transformPoint("velodyne",
 				track_msg.world_pose,
 				track_msg.velo_pose);
 		}

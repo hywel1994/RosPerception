@@ -252,21 +252,21 @@ VizObject Visualization::initVizObject(
 
 	// Init Bounding Box
 	viz_obj.bb.id = i;
-	viz_obj.bb.header.frame_id = "lidar";
+	viz_obj.bb.header.frame_id = "velodyne";
 	viz_obj.bb.ns = "my_namespace";
 	viz_obj.bb.type = Marker::CUBE;
 	viz_obj.bb.action = Marker::ADD;
 
 	// Init Arrow
 	viz_obj.arr.id = i;
-	viz_obj.arr.header.frame_id = "lidar";
+	viz_obj.arr.header.frame_id = "velodyne";
 	viz_obj.arr.ns = "my_namespace";
 	viz_obj.arr.type = Marker::ARROW;
 	viz_obj.arr.action = Marker::ADD;
 
 	// Init Text
 	viz_obj.txt.id = i;
-	viz_obj.txt.header.frame_id = "lidar";
+	viz_obj.txt.header.frame_id = "velodyne";
 	viz_obj.txt.ns = "my_namespace";
 	viz_obj.txt.type = Marker::TEXT_VIEW_FACING;
 	viz_obj.txt.action = Marker::ADD;
@@ -280,7 +280,7 @@ void Visualization::updateBoundingBox(VizObject & viz_obj, const int i, const Ob
 	viz_obj.bb.action = Marker::ADD;
 	viz_obj.bb.ns = "my_namespace";
 	viz_obj.bb.type = Marker::CUBE;
-	viz_obj.bb.header.frame_id = "lidar";
+	viz_obj.bb.header.frame_id = "velodyne";
 	viz_obj.bb.id = i;
 
 	viz_obj.bb.pose.position.x = obj.velo_pose.point.x;
@@ -311,7 +311,7 @@ void Visualization::updateText(VizObject & viz_obj, const int i, const Object & 
 	viz_obj.txt.action = Marker::ADD;
 	viz_obj.txt.ns = "my_namespace";
 	viz_obj.txt.type = Marker::TEXT_VIEW_FACING;
-	viz_obj.txt.header.frame_id = "lidar";
+	viz_obj.txt.header.frame_id = "velodyne";
 	viz_obj.txt.id = i;
 
 	viz_obj.txt.pose.position.x = obj.velo_pose.point.x;

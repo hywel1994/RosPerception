@@ -113,11 +113,12 @@ void DbScan::process(const Image::ConstPtr & image_detection_grid){
 		ROS_ERROR("cv_bridge exception: %s", e.what());
 		return;
 	}
-
+	ROS_INFO("start runDbScan");
 	// Run DbScan algorithm
 	cv::Mat grid = cv_det_grid_ptr->image.clone(); 
 	runDbScan(grid);
 
+	ROS_INFO("start filterClusters");
 	// Determine cluster information
 	filterClusters(cv_det_grid_ptr->image);
 
@@ -146,10 +147,10 @@ void DbScan::runDbScan(cv::Mat grid){
 
 	// Clear previous Clusters
 	clusters_.clear();
-
+	
 	// Loop through image
 	for(int y = 0; y < grid.rows; y++){
-		for(int x = y; y < grid.cols - x; x++){
+		for(int x = 0; x < grid.cols; x++){
 
 			// Get semantic
 			int semantic_class = grid.at<cv::Vec3f>(y,x)[0];
@@ -167,7 +168,7 @@ void DbScan::runDbScan(cv::Mat grid){
 			// New cluster
 			Cluster c = Cluster();
 			c.kernel = 15; //tools_->getClusterKernel(semantic_class);
-			c.class_num.resize(150,0);
+			c.class_num.resize(151,0);
 			c.class_num[semantic_class] += 1;
 			// ROS_INFO("c.kernel [%d]", c.kernel);
 
@@ -374,34 +375,33 @@ void DbScan::filterClusters(const cv::Mat grid){
 		// 	}
 		// 	addObject(c);
 		// }
-
-		if(updateScu(c)){
+		if(updateBoat(c)){
 			c.is_new_track = true;
 			addObject(c);
 		}
-		// addObject(c);
-		// Determine if cluster can be a new track
-		// if(c.semantic.id == 13){
-		// 	if(updateCar(c)){
-		// 		if(spawnCar(c)){
-		// 			c.is_new_track = true;
-		// 		}
-		// 		addObject(c);
-		// 	}
-		// }
-		// // Pedestrian
-		// else if(c.semantic.id == 11){
-		// 	if(updatePed(c)){
-		// 		if(spawnPed(c)){
-		// 			c.is_new_track = true;
-		// 		}
-		// 		addObject(c);
-		// 	}
-		// }
-		// else{
-		// 	// to do set obeject
-		// 	addObject(c);
-		// }
+		else if(c.semantic.id == 34){
+			if(updateScu(c)){
+				c.is_new_track = true;
+				addObject(c);
+			}
+		}
+		else if (c.semantic.id == 0 or c.semantic.id == 90 ){
+			c.semantic.id = 0; 
+			if(updateScu(c)){
+				c.is_new_track = true;
+				addObject(c);
+			}
+		}
+		else{
+			c.semantic.id = 150;
+			if(updateScu(c)){
+				c.is_new_track = true;
+				addObject(c);
+			}
+
+		}
+
+
 	}
 }
 

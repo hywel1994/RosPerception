@@ -13,7 +13,7 @@ data_association:
       form: 2.0
   boat:
     dist:
-      position: 2.0
+      position: 5.0
       form: 5.0
 
 tracking:
@@ -26,7 +26,7 @@ tracking:
       x: 0.15
       y: 0.15
     acc: 0.4
-    yaw_rate: 0.314
+    yaw_rate: 0.0
   lambda: 2.0
   aging:
     bad: 5
