@@ -376,6 +376,7 @@ void DbScan::filterClusters(const cv::Mat grid){
 		// 	addObject(c);
 		// }
 		if(updateBoat(c)){
+			c.semantic.id = 76;
 			c.is_new_track = true;
 			addObject(c);
 		}
