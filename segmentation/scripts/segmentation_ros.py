@@ -103,10 +103,10 @@ def load_model(args):
 class Segmentation(object):
     def __init__(self, segmentation_module, nums_class, padding_constant, rate=2):
         #self.image_sub = rospy.Subscriber("/kitti/camera_color_left/image_raw", Image, self.imageCallback, queue_size=2)
-        # self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.imageCallback, queue_size=2)
-        # self.cloud_sub = rospy.Subscriber("/velodyne_points", PointCloud2, self.cloudCallback, queue_size=2)
-        self.image_sub = rospy.Subscriber("/self/camera/usv/image_raw", Image, self.imageCallback, queue_size=2)
-        self.cloud_sub = rospy.Subscriber("/velodyne_points2", PointCloud2, self.cloudCallback, queue_size=2)
+        self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.imageCallback, queue_size=2)
+        self.cloud_sub = rospy.Subscriber("/velodyne_points", PointCloud2, self.cloudCallback, queue_size=2)
+        # self.image_sub = rospy.Subscriber("/self/camera/usv/image_raw", Image, self.imageCallback, queue_size=2)
+        # self.cloud_sub = rospy.Subscriber("/velodyne_points2", PointCloud2, self.cloudCallback, queue_size=2)
         self.count = 0
         # self.ts = message_filters.TimeSynchronizer([self.image_sub
         #                                             , self.cloud_sub
@@ -213,7 +213,7 @@ class Segmentation(object):
 
 def main(args):
     segmentation_module = load_model(args)
-    segmentation = Segmentation(segmentation_module, args.num_class, args.padding_constant)
+    segmentation = Segmentation(segmentation_module, args.num_class, args.padding_constant, rate=1)
 
     print('Inference done!')
 

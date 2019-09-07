@@ -145,7 +145,7 @@ if __name__ == '__main__':
                         help='number of classes')
     parser.add_argument('--batch_size', default=1, type=int,
                         help='batchsize. current only supports 1')
-    parser.add_argument('--imgSize', default=[300, 400, 500, 600],
+    parser.add_argument('--imgSize', default=[300],
                         nargs='+', type=int,
                         help='list of input image sizes.'
                              'for multiscale testing, e.g. 300 400 500')
