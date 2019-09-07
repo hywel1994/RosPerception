@@ -18,7 +18,7 @@ import cv2
 from tqdm import tqdm
 
 colors = loadmat('data/color150.mat')['colors']
-
+import sys
 
 def visualize_result(data, pred, args):
     (img, info) = data
@@ -30,8 +30,9 @@ def visualize_result(data, pred, args):
     im_vis = np.concatenate((img, pred_color), axis=1)
 
     img_name = info.split('/')[-1]
+
     cv2.imwrite(os.path.join(args.result,
-                img_name.replace('.jpg', '.png')), im_vis)
+                img_name.replace('.jpeg', '.png')), im_vis)
 
 
 def test(segmentation_module, loader, args):
@@ -97,7 +98,7 @@ def main(args):
         test_imgs = find_recursive(args.test_imgs[0])
     else:
         test_imgs = args.test_imgs
-    list_test = [{'fpath_img': x} for x in test_imgs]
+    list_test = [{'fpath_img': 'test.jpeg'}]
     dataset_test = TestDataset(
         list_test, args, max_sample=args.num_val)
     loader_test = torchdata.DataLoader(
@@ -122,9 +123,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     # Path related arguments
-    parser.add_argument('--test_imgs', required=True, nargs='+', type=str,
+    parser.add_argument('--test_imgs', nargs='+', type=str, default='test.jpeg',
                         help='a list of image paths, or a directory name')
-    parser.add_argument('--model_path', required=True,
+    parser.add_argument('--model_path', default='baseline-mobilenetv2dilated-c1_deepsup',
                         help='folder to model path')
     parser.add_argument('--suffix', default='_epoch_20.pth',
                         help="which snapshot to load")
@@ -168,10 +169,11 @@ if __name__ == '__main__':
     for key, val in vars(args).items():
         print("{:16} {}".format(key, val))
 
+    DIR_PATH = os.path.dirname(sys.path[0])
     # absolute paths of model weights
-    args.weights_encoder = os.path.join(args.model_path,
+    args.weights_encoder = os.path.join(DIR_PATH, 'models', args.model_path,
                                         'encoder' + args.suffix)
-    args.weights_decoder = os.path.join(args.model_path,
+    args.weights_decoder = os.path.join(DIR_PATH, 'models', args.model_path,
                                         'decoder' + args.suffix)
 
     assert os.path.exists(args.weights_encoder) and \
