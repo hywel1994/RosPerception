@@ -90,7 +90,7 @@ class synchronizer:
 
         self.br_boat_world = tf.TransformBroadcaster()
         self.br_lidar_boat = tf.TransformBroadcaster()
-        self.br_lidar_boat2 = tf.TransformBroadcaster()
+        # self.br_lidar_boat2 = tf.TransformBroadcaster()
         self.br_camera_boat = tf.TransformBroadcaster()
         
         rate = rospy.Rate(rate)
@@ -152,17 +152,17 @@ class synchronizer:
                      "boat",
                      "world")
 
-        self.br_lidar_boat2.sendTransform((0, 0, 0.2),
+        self.br_lidar_boat.sendTransform((0, 0, 0.2),
                      tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
                      "velodyne",
                      "boat")
         
-        self.br_lidar_boat.sendTransform((0, 0, 0.2),
-                     tf.transformations.quaternion_from_euler(0, 0, 0),
-                     rospy.Time.now(),
-                     "lidar",
-                     "boat")
+        # self.br_lidar_boat2.sendTransform((0, 0, 0.2),
+        #              tf.transformations.quaternion_from_euler(0, 0, 0),
+        #              rospy.Time.now(),
+        #              "lidar",
+        #              "boat")
         
         self.br_camera_boat.sendTransform((0, 0, 0.1),
                      tf.transformations.quaternion_from_euler(0, 0, 0),
