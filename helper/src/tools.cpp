@@ -106,9 +106,9 @@ Tools::Tools(bool is_kitti){
 	// Fill transformation matrices
 		TRANS_VELO_TO_CAM = MatrixXf::Zero(4, 4);
 		TRANS_VELO_TO_CAM << 
-			0, -1,  0, 0,
+			0, -1,  0, 0.02,
 			0,  0, -1, -0.1,
-			1,  0,  0, 0,  // camera height
+			1,  0,  0, -0.3,  // camera height
 			0,  0,  0, 0;
 
 
