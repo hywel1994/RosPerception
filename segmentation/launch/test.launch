@@ -1,0 +1,5 @@
+<launch>
+
+  <node pkg="segmentation" type="segmentation_ros.py" name="segmentation_ros" />
+
+</launch>

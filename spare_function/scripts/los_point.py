@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 import rospy
 
-from usv_gazebo_plugins.msg import Drive
-from usv_gazebo.cfg import usv_gazebo_Config
+try:
+    from usv_gazebo_plugins.msg import Drive
+    from usv_gazebo.cfg import usv_gazebo_Config
+    is_sim = True
+except:
+    is_sim = False
+    pass
 
 from helper.msg import BaseSensor 
 from helper.msg import ObjectArray
@@ -13,7 +18,10 @@ from spare_function.msg import spare_function_para
 
 from dynamic_reconfigure.server import Server
 
-from PDcontroller_sim import Controller2Trimaran
+if is_sim:
+    from PDcontroller_sim import Controller2Trimaran
+else:
+    from PDcontroller import Controller2Trimaran 
 
 import math
 from math import pi
@@ -119,8 +127,8 @@ def calLosDis(target, point, pos_farther, self_pos, run_yaw):
 
 if __name__ == "__main__":
     rospy.init_node("control", anonymous = True)
-
-    mach_pub = rospy.Publisher('self/usv/cmd_drive', Drive, queue_size=5)
+    if is_sim:
+        mach_pub = rospy.Publisher('self/usv/cmd_drive', Drive, queue_size=5)
     spare_function_pub = rospy.Publisher('spare_function_out', spare_function_out, queue_size=5)
     spare_function_para_pub = rospy.Publisher('spare_function_para', spare_function_para, queue_size=5)
     
@@ -190,11 +198,13 @@ if __name__ == "__main__":
             mach_np = [left_motor,right_motor]
             
             print ('mach_np: ', mach_np)
-            mach_pubmsg = getOutMachPut(mach_np)
+            if is_sim:
+                mach_pubmsg = getOutMachPut(mach_np)
             out_pubmsg = getOutput(out_np)
             para_pubmsg = getOutParaPut(para_cfg)
-
-            mach_pub.publish(mach_pubmsg)
+            
+            if is_sim:
+                mach_pub.publish(mach_pubmsg)
             spare_function_pub.publish(out_pubmsg)
             spare_function_para_pub.publish(para_pubmsg)
 
