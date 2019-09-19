@@ -167,7 +167,7 @@ void DbScan::runDbScan(cv::Mat grid){
 
 			// New cluster
 			Cluster c = Cluster();
-			c.kernel = 15; //tools_->getClusterKernel(semantic_class);
+			c.kernel = 2; //tools_->getClusterKernel(semantic_class);
 			c.class_num.resize(151,0);
 			c.class_num[semantic_class] += 1;
 			// ROS_INFO("c.kernel [%d]", c.kernel);
@@ -375,7 +375,10 @@ void DbScan::filterClusters(const cv::Mat grid){
 		// 	}
 		// 	addObject(c);
 		// }
+                //addObject(c);
+                
 		if(updateBoat(c)){
+                        ROS_INFO("find boat");
 			c.semantic.id = 76;
 			c.is_new_track = true;
 			addObject(c);
@@ -401,6 +404,7 @@ void DbScan::filterClusters(const cv::Mat grid){
 			}
 
 		}
+                
 
 
 	}

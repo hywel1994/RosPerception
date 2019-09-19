@@ -67,8 +67,8 @@ class Interface(object):
 
 def ship_initialize(USE_TLG001, USE_TLG002):
     if USE_TLG001:
-        # sub_addr1 = 'tcp://192.168.1.150'  
-        sub_addr1 = 'tcp://127.0.0.1'
+        sub_addr1 = 'tcp://192.168.1.150'  
+        #sub_addr1 = 'tcp://127.0.0.1'
         ahrs_port1 = '55005'
         gnss_port1 = '55004'
         ekf_port1 = '55007'
@@ -78,8 +78,8 @@ def ship_initialize(USE_TLG001, USE_TLG002):
         interface001 = None
 
     if USE_TLG002:
-        # sub_addr2 = 'tcp://192.168.1.152'  
-        sub_addr2 = 'tcp://127.0.0.2'
+        sub_addr2 = 'tcp://192.168.1.152'  
+        # sub_addr2 = 'tcp://127.0.0.2'
         ahrs_port2 = '55205'
         gnss_port2 = '55204'
         ekf_port2 = '55207'
