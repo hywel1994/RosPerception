@@ -1,6 +1,6 @@
 from math import *
 import numpy as np 
-import matplotlib.pyplot as plt 
+# import matplotlib.pyplot as plt 
 
 class PD2yaw(object):
 	'''
@@ -105,7 +105,7 @@ class Controller2Trimaran(object):
 			self.old_target_u = target_u
 
 		err_u = target_u - present_u
-		err_yaw = self.__errYawLimit(target_yaw - present_yaw)
+		err_yaw = -self.__errYawLimit(target_yaw - present_yaw)
 
 		diff = self.controller2yaw.pdControl(err_yaw)
 		daver = self.controller2u.pdControl(err_u)

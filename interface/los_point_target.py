@@ -40,16 +40,26 @@ class Interface(object):
         self.dev.sub_add_url('gps.hspeed')
         self.dev.sub_add_url('gps.vspeed')
         self.dev.sub_add_url('gps.track')
-
+        
+        self.dev.sub_connect(sub_addr+':'+'55007')        
+        self.dev.sub_add_url('USV150.state', default_values=[0,0,0,0,0,0])
+        
         self.dev.pub_bind('tcp://0.0.0.0:'+motor_port)
 
-    def receive(self, *args):
+    def receive1(self, *args):
         data = []
         for i in args:
             data.append(self.dev.sub_get1(i))
         return data
+    
+    def receive(self, *args):
+        data = []
+        for i in args:
+            data.append(self.dev.sub_get(i))
+        return data
 
     def Motor_send(self, left_motor, right_motor):
+        print ('left_motor, right_motor', left_motor, right_motor)
         self.dev.pub_set1('pro.left.speed', left_motor)
         self.dev.pub_set1('pro.right.speed', right_motor)
 
@@ -65,10 +75,12 @@ def ship_initialize(USE_TLG001, USE_TLG002):
         interface001 = None
 
     if USE_TLG002:
-        sub_addr2 = 'tcp://192.168.1.152'  # 'tcp://127.0.0.1'
+        #sub_addr2 = 'tcp://192.168.1.152'  
+        sub_addr2 = 'tcp://127.0.0.1'
         ahrs_port2 = '55205'
         gnss_port2 = '55204'
-        motor_port2 = '55202'
+        kal_port2 = '55007'
+        motor_port2 = '55002'
         interface002 = Interface(sub_addr2, ahrs_port2, gnss_port2, motor_port2)
     else:
         interface002 = None
@@ -107,7 +119,7 @@ def calPoint(targets, current, slef_pos):
 
 def calPosDis(pos_close, self_pos):
     disL = math.sqrt(math.pow(pos_close[0]-self_pos[0],2)+math.pow(pos_close[1]-self_pos[1],2))
-    target_yaw = math.atan2(pos_close[1]-self_pos[1],pos_close[0]-self_pos[0])
+    target_yaw = math.atan2(pos_close[1]-self_pos[1], pos_close[0]-self_pos[0])
 
     target_u = disL*0.5
     return disL, target_yaw, target_u
@@ -115,8 +127,8 @@ def calPosDis(pos_close, self_pos):
 def calLosDis(target, point, pos_farther, self_pos, run_yaw):
 
     dis_L_y = ((self_pos[0]-point[0])*(point[1]-pos_farther[1])-(self_pos[1]-point[1])*(point[0]-pos_farther[0])) / math.sqrt(math.pow(point[1]-pos_farther[1], 2)+math.pow(point[0]-pos_farther[0], 2))
-    dis_L_u = - ((self_pos[0]-point[0])*(point[1]-target[1])-(self_pos[1]-point[1])*(point[0]-target[0])) / math.sqrt(math.pow(point[1]-target[1], 2)+math.pow(point[0]-target[0], 2))
-    
+    dis_L_u = - ((target[0]-point[0])*(point[1]-self_pos[1])-(target[1]-point[1])*(point[0]-self_pos[0])) / math.sqrt(math.pow(point[1]-self_pos[1], 2)+math.pow(point[0]-self_pos[0], 2))
+    dis_L_u = math.fabs(dis_L_u)
     target_yaw = run_yaw - math.atan2(dis_L_y, max(5, dis_L_u))
     target_u = dis_L_u*0.5
 
@@ -127,38 +139,44 @@ if __name__ == "__main__":
     rate = 10
     _, interface002 = ship_initialize(False, True)
 
-    target_points = [[0, 0], [1, 1]]
+    target_points = [[70, 70], [50, 50]]
     current = 0
-    state = 0
+    state = 0 
     controller = Controller2Trimaran()
 
     try:
         while True:
             start = time.time()
-            state = interface002.receive('gps.posx', 'gps.posy', 'ahrs.yaw',
-                                        'ahrs.yaw_speed', 'gps.hspeed',
-                                        'gps.stdx', 'gps.stdy', 'gps.track')
+            sensor_state = interface002.receive('USV150.state')
+            sensor_state = sensor_state[0]
+            #print (len(state))
+            #[u,v,r,x,y,yaw]
+            #continue
             if current == len(target_points):
                 current = 0
 
             target_point = target_points[current]
-            sensor_submsg = [state[POS_X], state[POS_Y], state[YAW], state[SPD], 0]
+            sensor_submsg = [sensor_state[3], sensor_state[4], sensor_state[5], sensor_state[0], sensor_state[1]]
+            print ('x: ', sensor_submsg[0], 'y: ', sensor_submsg[1])
+            print ('state', state, 'current', current)
             if state == 0:
 
                 disL, target_yaw, target_u = calPosDis(target_point, sensor_submsg)
-                if (disL < 1):
+                print ('target_yaw: ', target_yaw, 'target_u: ', target_u)
+                if (math.fabs(disL) < 1):
                     state += 1
                     current += 1
                 else:
                     self_u = math.sqrt(math.pow(sensor_submsg[3], 2)+math.pow(sensor_submsg[4], 2))
                     left_motor,right_motor = controller.outputSignal(target_yaw, sensor_submsg[2], target_u, self_u)
                     interface002.Motor_send(left_motor,right_motor)
-                    
+                    #print ('left_motor,right_motor ', left_motor,right_motor)
             if state == 1:
                 pos_farther, pos, run_yaw = calPoint(target_points, current, sensor_submsg)
                 dis_L_y, dis_L_u, target_yaw, target_u = calLosDis(target_point, pos, pos_farther, sensor_submsg, run_yaw)
-
-                if (dis_L_u < 1):
+                print ('pos_farther, pos, run_yaw: ',pos_farther, pos, run_yaw)
+                print ('dis_L_y, dis_L_u, target_yaw, target_u', dis_L_y, dis_L_u, target_yaw, target_u)
+                if (math.fabs(dis_L_u) < 1):
                     current += 1
                 else:
                     self_u = math.sqrt(math.pow(sensor_submsg[3], 2)+math.pow(sensor_submsg[4], 2))
@@ -168,7 +186,7 @@ if __name__ == "__main__":
             end = time.time()
             if (end-start)<1./rate:
                 sleep = 1./rate - (end-start)
-                print ('sleep: ', sleep)
+                #print ('sleep: ', sleep)
                 time.sleep(sleep)
 
     finally:
