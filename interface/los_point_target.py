@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import math
 from math import pi, sin, cos, sqrt
 import time
@@ -14,7 +15,7 @@ SPD_DIR = 5
 
 class Interface(object):
 
-    def __init__(self, sub_addr, ahrs_port, gnss_port, motor_port):
+    def __init__(self, sub_addr, ahrs_port, gnss_port, ekf_port, motor_port):
         self.dev = MsgDevice()
         self.dev.open()
         self.dev.sub_connect(sub_addr+':'+ahrs_port)
@@ -41,7 +42,7 @@ class Interface(object):
         self.dev.sub_add_url('gps.vspeed')
         self.dev.sub_add_url('gps.track')
         
-        self.dev.sub_connect(sub_addr+':'+'55007')        
+        self.dev.sub_connect(sub_addr+':'+ekf_port)        
         self.dev.sub_add_url('USV150.state', default_values=[0,0,0,0,0,0])
         
         self.dev.pub_bind('tcp://0.0.0.0:'+motor_port)
@@ -69,19 +70,20 @@ def ship_initialize(USE_TLG001, USE_TLG002):
         sub_addr1 = 'tcp://192.168.1.150'  # 'tcp://127.0.0.1'
         ahrs_port1 = '55005'
         gnss_port1 = '55004'
+        ekf_port1 = '55007'
         motor_port1 = '55002'
-        interface001 = Interface(sub_addr1, ahrs_port1, gnss_port1, motor_port1)
+        interface001 = Interface(sub_addr1, ahrs_port1, gnss_port1, efk_port1, motor_port1)
     else:
         interface001 = None
 
     if USE_TLG002:
         #sub_addr2 = 'tcp://192.168.1.152'  
-        sub_addr2 = 'tcp://127.0.0.1'
+        sub_addr2 = 'tcp://127.0.0.2'
         ahrs_port2 = '55205'
         gnss_port2 = '55204'
-        kal_port2 = '55007'
-        motor_port2 = '55002'
-        interface002 = Interface(sub_addr2, ahrs_port2, gnss_port2, motor_port2)
+        ekf_port2 = '55207'
+        motor_port2 = '55202'
+        interface002 = Interface(sub_addr2, ahrs_port2, gnss_port2, ekf_port2, motor_port2)
     else:
         interface002 = None
 
@@ -121,7 +123,7 @@ def calPosDis(pos_close, self_pos):
     disL = math.sqrt(math.pow(pos_close[0]-self_pos[0],2)+math.pow(pos_close[1]-self_pos[1],2))
     target_yaw = math.atan2(pos_close[1]-self_pos[1], pos_close[0]-self_pos[0])
 
-    target_u = disL*0.5
+    target_u = min(disL*0.5, 1)
     return disL, target_yaw, target_u
 
 def calLosDis(target, point, pos_farther, self_pos, run_yaw):
@@ -130,7 +132,7 @@ def calLosDis(target, point, pos_farther, self_pos, run_yaw):
     dis_L_u = - ((target[0]-point[0])*(point[1]-self_pos[1])-(target[1]-point[1])*(point[0]-self_pos[0])) / math.sqrt(math.pow(point[1]-self_pos[1], 2)+math.pow(point[0]-self_pos[0], 2))
     dis_L_u = math.fabs(dis_L_u)
     target_yaw = run_yaw - math.atan2(dis_L_y, max(5, dis_L_u))
-    target_u = dis_L_u*0.5
+    target_u = min(dis_L_u*0.1, 0.5)
 
     return dis_L_y, dis_L_u, target_yaw, target_u
 
@@ -139,7 +141,7 @@ if __name__ == "__main__":
     rate = 10
     _, interface002 = ship_initialize(False, True)
 
-    target_points = [[70, 70], [50, 50]]
+    target_points = [[-50, -50], [50, 50]]
     current = 0
     state = 0 
     controller = Controller2Trimaran()

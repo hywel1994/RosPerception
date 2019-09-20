@@ -150,12 +150,13 @@ if __name__ == "__main__":
             mach_np = [0,0]
             out_np = [0,0]
 
-            if para_cfg[0] == 1:
+            if para_cfg[0] == 0:
                 target_yaw = para_cfg[1]
                 target_x = para_cfg[2]
                 target_y = para_cfg[3]
                 #if target_yaw > 1:
-                target_point = [target_x, target_y]
+                target_point = [target_x, target_y, 180]
+                pos_farther, pos, pos_close, run_yaw = calPoint(target_point)
             else:
                 # target_point = [15, -5, 180]
                 if len(target_submsg) > 0:
@@ -184,16 +185,17 @@ if __name__ == "__main__":
 
                 if (dis_L_u < 1):
                     print ('find target')
-                    rate.sleep()
-                    continue
+                    #rate.sleep()
+                    left_motor,right_motor = 0,0
+                else:
                 
-                print ('run_yaw: ', run_yaw)
-                print ('dis_L_y, dis_L_u: ', dis_L_y, dis_L_u)
+                    print ('run_yaw: ', run_yaw)
+                    print ('dis_L_y, dis_L_u: ', dis_L_y, dis_L_u)
 
-                print ('target_yaw, target_u: ', target_yaw, target_u)
+                    print ('target_yaw, target_u: ', target_yaw, target_u)
                 
-                self_u = math.sqrt(math.pow(sensor_submsg[3], 2)+math.pow(sensor_submsg[4], 2))
-                left_motor,right_motor = controller.outputSignal(target_yaw, sensor_submsg[2], target_u, self_u)
+                    self_u = math.sqrt(math.pow(sensor_submsg[3], 2)+math.pow(sensor_submsg[4], 2))
+                    left_motor,right_motor = controller.outputSignal(target_yaw, sensor_submsg[2], target_u, self_u)
 
             mach_np = [left_motor,right_motor]
             
@@ -201,7 +203,7 @@ if __name__ == "__main__":
             if is_sim:
                 mach_pubmsg = getOutMachPut(mach_np)
                 
-            out_pubmsg = getOutput(out_np)
+            out_pubmsg = getOutput(mach_np)
             para_pubmsg = getOutParaPut(para_cfg)
             
             if is_sim:
