@@ -87,7 +87,7 @@ class synchronizer:
 
         self.sensor_pub = rospy.Publisher('/base/sensor', BaseSensor, queue_size=1)
         self.mach_sub = rospy.Subscriber("/spare_function_out", spare_function_out, self.spareFunctionOutCallback, queue_size=2)
-
+        
         self.br_boat_world = tf.TransformBroadcaster()
         self.br_lidar_boat = tf.TransformBroadcaster()
         # self.br_lidar_boat2 = tf.TransformBroadcaster()

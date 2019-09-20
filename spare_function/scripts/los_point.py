@@ -200,11 +200,13 @@ if __name__ == "__main__":
             print ('mach_np: ', mach_np)
             if is_sim:
                 mach_pubmsg = getOutMachPut(mach_np)
+                
             out_pubmsg = getOutput(out_np)
             para_pubmsg = getOutParaPut(para_cfg)
             
             if is_sim:
                 mach_pub.publish(mach_pubmsg)
+
             spare_function_pub.publish(out_pubmsg)
             spare_function_para_pub.publish(para_pubmsg)
 
