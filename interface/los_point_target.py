@@ -63,7 +63,9 @@ class Interface(object):
         print ('left_motor, right_motor', left_motor, right_motor)
         self.dev.pub_set1('pro.left.speed', left_motor)
         self.dev.pub_set1('pro.right.speed', right_motor)
-
+    
+    def pointSend(self, pose):
+        self.dev.pub_set('target.point', pose)
 
 def ship_initialize(USE_TLG001, USE_TLG002):
     if USE_TLG001:
@@ -185,6 +187,8 @@ if __name__ == "__main__":
                     left_motor,right_motor = controller.outputSignal(target_yaw, sensor_submsg[2], target_u, self_u)
                     interface002.Motor_send(left_motor,right_motor)
             
+            point = target_points[0]+target_points[1]
+            interface002.pointSend(point)
             end = time.time()
             if (end-start)<1./rate:
                 sleep = 1./rate - (end-start)

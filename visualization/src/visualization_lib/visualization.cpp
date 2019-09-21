@@ -14,7 +14,7 @@ namespace visualization{
 Visualization::Visualization(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	nh_(nh),
 	private_nh_(private_nh),
-	image_raw_left_sub_(nh,	"/pointgrey/image_raw", 2),
+	image_raw_left_sub_(nh,	"/image_raw/image", 2),
 	list_detected_objects_sub_(nh, "/detection/objects", 2),
 	list_tracked_objects_sub_(nh, "/tracking/objects", 2),
 	sync_det_(MySyncPolicy(10), image_raw_left_sub_, list_detected_objects_sub_),
