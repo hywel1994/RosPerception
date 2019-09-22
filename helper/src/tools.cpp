@@ -77,7 +77,7 @@ Tools::Tools(bool is_kitti){
 			2, // Motocycle
 			2; // Bicycle
 	}
-	else{
+	else{   /*
 		if (true){
 			TRANS_VELO_TO_CAM = MatrixXf::Zero(4, 4);
 			TRANS_VELO_TO_CAM << 
@@ -101,6 +101,7 @@ Tools::Tools(bool is_kitti){
 				0.0, 0.0, 1.0, 0.0;
 		}
 		else
+                */
 		{
 	// Fill transformation matrices
 		TRANS_VELO_TO_CAM = MatrixXf::Zero(4, 4);
@@ -120,14 +121,15 @@ Tools::Tools(bool is_kitti){
 
 		TRANS_RECTCAM_TO_IMAGE = MatrixXf::Zero(3, 4);
 		TRANS_RECTCAM_TO_IMAGE << 
-			// 816.118268598647, 0, 680.6511245884145, 0,
-			// 0, 822.0196620588329, 458.230641061779, 0,
-			// 0, 0, 1, 0;
-			1752.673584, 0.000000, 307.673123, 0.000000, 
-			0.000000, 1778.096191, 377.328255, 0.000000, 
-			0.000000, 0.000000, 1.000000, 0.000000;
+			751.888998, 0.000000, 361.812049, 0.000000, 
+                        0.000000, 779.674744, 286.634446, 0.000000, 
+                        0.000000, 0.000000, 1.000000, 0.000000;
+			//1685.879883, 0.000000, 387.551634, 0.000000, 
+                        //0.000000, 1698.826660, 273.748565, 0.000000, 
+                        //0.000000, 0.000000, 1.000000, 0.000000;
 
 		}
+
 		SEMANTIC_NAMES = std::vector<std::string>{
 			"wall",
 			"building;edifice",
