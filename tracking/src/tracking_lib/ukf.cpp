@@ -249,7 +249,7 @@ void UnscentedKF::Prediction(const double delta_t){
 			track.sta.Xsig_pred(1,j) = py_p;
 			track.sta.Xsig_pred(2,j) = v_p;
 			track.sta.Xsig_pred(3,j) = yaw_p;
-			track.sta.Xsig_pred(4,j) = 0; //yawd_p;
+			track.sta.Xsig_pred(4,j) = yawd_p;
 		}
 
 /******************************************************************************
@@ -317,19 +317,6 @@ void UnscentedKF::GlobalNearestNeighbor(
 			gate = params_.da_boat_dist_pos;
 			box_gate = params_.da_boat_dist_form;
 		}
-		// // Pedestrian
-		// if(tracks_[i].sem.id == 11){
-		// 	gate = params_.da_ped_dist_pos;
-		// 	box_gate = params_.da_ped_dist_form;
-		// }
-		// // Car
-		// else if(tracks_[i].sem.id == 13){
-		// 	gate = params_.da_car_dist_pos;
-		// 	box_gate = params_.da_car_dist_form;
-		// }
-		// else{
-		// 	ROS_WARN("Wrong semantic for track [%d]", tracks_[i].id);
-		// }
 
 		// Loop through detected objects
 		for(int j = 0; j < detected_objects->list.size(); ++j){
@@ -613,6 +600,8 @@ void UnscentedKF::TrackManagement(const ObjectArrayConstPtr & detected_objects){
 			tmp_dis = CalculateDistance(track, tracks_[j]);
 
 			if (tmp_dis < 1){
+				ROS_INFO("second Deletion of T [%d]", tracks_[j].id);
+
 				// Swap track with end of vector and pop back
 				std::swap(tracks_[j],tracks_.back());
 				tracks_.pop_back();
@@ -626,7 +615,7 @@ void UnscentedKF::initTrack(const Object & obj){
 	// Only if object can be a track
 	if(! obj.is_new_track)
 		return;
-
+	
 	// Create new track
 	Track tr = Track();
 
@@ -671,7 +660,8 @@ void UnscentedKF::initTrack(const Object & obj){
 		tr.class_num[obj.semantic_id] += obj.semantic_confidence;
 	}
 	
-	
+	ROS_INFO("init");
+
 	// Push back to track list
 	tracks_.push_back(tr);
 }

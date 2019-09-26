@@ -26,7 +26,7 @@ tracking:
       x: 0.15
       y: 0.15
     acc: 0.4
-    yaw_rate: 0.0
+    yaw_rate: 0
   lambda: 2.0
   aging:
     bad: 5
