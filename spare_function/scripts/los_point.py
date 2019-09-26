@@ -71,6 +71,13 @@ def trackingCallback(msg):
         target.sort(key=lambda x:x[0])
     if len(target) > 0:
         target_submsg = target[0]
+    if len(target_submsg)>0:
+        tar_msg = BaseSensor()
+        tar_msg.x = target_submsg[1]
+        tar_msg.y = target_submsg[2]
+        tar_msg.vx = target_submsg[3]
+        tar_msg.yaw = target_submsg[4]
+        target_pub.publish(tar_msg)
     print ('target_submsg: ', target_submsg)
     
 
@@ -131,6 +138,7 @@ if __name__ == "__main__":
         mach_pub = rospy.Publisher('self/usv/cmd_drive', Drive, queue_size=5)
     spare_function_pub = rospy.Publisher('spare_function_out', spare_function_out, queue_size=5)
     spare_function_para_pub = rospy.Publisher('spare_function_para', spare_function_para, queue_size=5)
+    target_pub = rospy.Publisher('target_pose', BaseSensor, queue_size=5)
     
     rospy.Subscriber("/base/sensor", BaseSensor, sensorCallback)
     rospy.Subscriber("/tracking/objects", ObjectArray, trackingCallback)

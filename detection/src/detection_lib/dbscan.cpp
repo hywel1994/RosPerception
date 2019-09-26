@@ -128,9 +128,9 @@ void DbScan::process(const Image::ConstPtr & image_detection_grid){
 	object_array_pub_.publish(object_array_);
 
 	// Print cluster info
-	for(int i = 0; i < number_of_clusters_; ++i){
-		printCluster(clusters_[i]);
-	}
+	// for(int i = 0; i < number_of_clusters_; ++i){
+	// 	printCluster(clusters_[i]);
+	// }
 	// Print object info
 	for(int i = 0; i < object_array_.list.size(); ++i){
 		printObject(object_array_.list[i]);
@@ -167,7 +167,7 @@ void DbScan::runDbScan(cv::Mat grid){
 
 			// New cluster
 			Cluster c = Cluster();
-			c.kernel = 2; //tools_->getClusterKernel(semantic_class);
+			c.kernel = 10; //tools_->getClusterKernel(semantic_class);
 			c.class_num.resize(151,0);
 			c.class_num[semantic_class] += 1;
 			// ROS_INFO("c.kernel [%d]", c.kernel);
@@ -383,6 +383,7 @@ void DbScan::filterClusters(const cv::Mat grid){
 			c.is_new_track = true;
 			addObject(c);
 		}
+		/*
 		else if(c.semantic.id == 34){
 			if(updateScu(c)){
 				c.is_new_track = true;
@@ -404,6 +405,7 @@ void DbScan::filterClusters(const cv::Mat grid){
 			}
 
 		}
+		*/
                 
 
 
