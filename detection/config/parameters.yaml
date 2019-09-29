@@ -70,8 +70,8 @@ boat:
       min: 0
   update:
     side:
-      min: 0.50
-      max: 2.00
+      min: 0.40
+      max: 2.0
     height:
       min: 0.10
       max: 2.00

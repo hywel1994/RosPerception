@@ -156,7 +156,8 @@ void DbScan::runDbScan(cv::Mat grid){
 			int semantic_class = grid.at<cv::Vec3f>(y,x)[0];
 			
 			// If not valid semantic continue
-			if(semantic_class < 0 ){
+			// || grid.at<cv::Vec3f>(y,x)[1] < 1
+			if(semantic_class < 0 || grid.at<cv::Vec3f>(y,x)[1] <= 2){
 				continue;
 			}
 
@@ -167,7 +168,8 @@ void DbScan::runDbScan(cv::Mat grid){
 
 			// New cluster
 			Cluster c = Cluster();
-			c.kernel = 10; //tools_->getClusterKernel(semantic_class);
+			c.kernel = 6; //tools_->getClusterKernel(semantic_class);
+			c.count = grid.at<cv::Vec3f>(y,x)[1];
 			c.class_num.resize(151,0);
 			c.class_num[semantic_class] += 1;
 			// ROS_INFO("c.kernel [%d]", c.kernel);
@@ -209,7 +211,10 @@ void DbScan::runDbScan(cv::Mat grid){
 
 							// If this semantic matches with cluster semantic
 							if (true) {
-								if(n_semantic_class >= 0){
+								//&& grid.at<cv::Vec3f>(y,x)[1] >= 1
+								if(n_semantic_class >= 0 && grid.at<cv::Vec3f>(y,x)[1] >= 2){
+
+									c.count += grid.at<cv::Vec3f>(n_y,n_x)[1];
 
 									c.class_num[n_semantic_class] += 1;
 									// Flag neighbor cell as visited
@@ -339,13 +344,12 @@ void DbScan::filterClusters(const cv::Mat grid){
 		c.geometric.length = (rect.size.height + 1) * params_.grid_cell_size;
 
 		// Find minimum and maximum in z coordinates
-		float min_low_z = grid.at<cv::Vec3f>(
-			c.geometric.cells[0].y,c.geometric.cells[0].x)[1];
+		float min_low_z = 0;
 		float max_high_z = grid.at<cv::Vec3f>(
 			c.geometric.cells[0].y,c.geometric.cells[0].x)[2];
+		// ROS_INFO("[%f,%f]",min_low_z, max_high_z);
 		for(int j = 1; j < c.geometric.cells.size(); ++j){
-			float low_z = grid.at<cv::Vec3f>(
-				c.geometric.cells[j].y,c.geometric.cells[j].x)[1];
+			float low_z = 0;
 			float high_z = grid.at<cv::Vec3f>(
 				c.geometric.cells[j].y,c.geometric.cells[j].x)[2];
 			min_low_z = (min_low_z < low_z) ? min_low_z : low_z;
@@ -376,13 +380,17 @@ void DbScan::filterClusters(const cv::Mat grid){
 		// 	addObject(c);
 		// }
                 //addObject(c);
-                
-		if(updateBoat(c)){
-                        ROS_INFO("find boat");
+                //&& c.count > 10
+		if(updateBoat(c) && c.count > 10){
+            ROS_INFO("find boat [%d]", c.count);
 			c.semantic.id = 76;
 			c.is_new_track = true;
 			addObject(c);
 		}
+		// else{
+		// 	ROS_INFO("other [%d]", c.count);
+		// 	addObject(c);
+		// }
 		/*
 		else if(c.semantic.id == 34){
 			if(updateScu(c)){
@@ -518,7 +526,7 @@ bool DbScan::spawnBoat(const Cluster & c){
 }
 
 bool DbScan::updateBoat(const Cluster & c){
-	return (c.geometric.width > params_.boat_update.side_min ||
+	return (c.geometric.width > params_.boat_update.side_min &&
 		c.geometric.length > params_.boat_update.side_min)
 		&&
 		(c.geometric.width < params_.boat_update.side_max &&
@@ -537,11 +545,11 @@ bool DbScan::isValidSemantic(const int semantic_class){
 void DbScan::printCluster(const Cluster & c){
 
 	ROS_INFO("Cluster %d Label %s Freespace %d New Track %d with to [%f,%d,%d],"
-		" pos[x,y,z] [%f,%f,%f]"
+		" pos[x,y,z,count] [%f,%f,%f,%d]"
 		" form[w,l,h,o] [%f,%f,%f,%f]",
 		c.id, c.semantic.name.c_str(), c.has_adjacent_free_space, c.is_new_track ,
 		c.semantic.confidence, c.geometric.num_cells, c.semantic.diff_counter,
-		c.geometric.x, c.geometric.y, c.geometric.z,
+		c.geometric.x, c.geometric.y, c.geometric.z, c.count,
 		c.geometric.width, c.geometric.length,
 		c.geometric.height, c.geometric.orientation);
 }
@@ -549,10 +557,10 @@ void DbScan::printCluster(const Cluster & c){
 void DbScan::printObject(const Object & o){
 
 	ROS_INFO("Object %d Label %s New Track %d with to [%f],"
-		" pos[x,y,z] [%f,%f,%f]"
+		" pos[x,y,z,count] [%f,%f,%f,%d]"
 		" form[w,l,h,o] [%f,%f,%f,%f]",
 		o.id, o.semantic_name.c_str(), o.is_new_track ,o.semantic_confidence,
-		o.velo_pose.point.x, o.velo_pose.point.y, o.velo_pose.point.z,
+		o.world_pose.point.x, o.world_pose.point.y, o.world_pose.point.z,o.semantic_id, 
 		o.width, o.length,
 		o.height, o.orientation);
 }

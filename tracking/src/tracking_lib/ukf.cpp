@@ -104,7 +104,7 @@ UnscentedKF::UnscentedKF(ros::NodeHandle nh, ros::NodeHandle private_nh):
 
 	// Define Publisher
 	list_tracked_objects_pub_ = nh_.advertise<ObjectArray>(
-		"/tracking/objects", 2);
+		"/tracking/objects2", 2);
 
 	// Random color for track
 	rng_(2345);
@@ -249,7 +249,7 @@ void UnscentedKF::Prediction(const double delta_t){
 			track.sta.Xsig_pred(1,j) = py_p;
 			track.sta.Xsig_pred(2,j) = v_p;
 			track.sta.Xsig_pred(3,j) = yaw_p;
-			track.sta.Xsig_pred(4,j) = yawd_p;
+			track.sta.Xsig_pred(4,j) = 0; //yawd_p;
 		}
 
 /******************************************************************************

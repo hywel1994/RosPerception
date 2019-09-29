@@ -78,6 +78,8 @@ struct Cluster{
 	// Kernel size
 	int kernel;
 
+	int count;
+
 	// Semantic information
 	Semantic semantic;
 

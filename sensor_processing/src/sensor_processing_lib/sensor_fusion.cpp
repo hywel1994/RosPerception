@@ -620,8 +620,9 @@ void SensorFusion::mapPointCloudIntoImage(const VPointCloud::Ptr cloud,
 
 		// Fill detection grid with semantic class
 		detection_grid_.at<cv::Vec3f>(grid_y, grid_x)[0] = max_class;
-		detection_grid_.at<cv::Vec3f>(grid_y, grid_x)[1] = cell.ground;
-		detection_grid_.at<cv::Vec3f>(grid_y, grid_x)[2] = cell.ground + cell.height;
+		detection_grid_.at<cv::Vec3f>(grid_y, grid_x)[1] = cell.count;
+		detection_grid_.at<cv::Vec3f>(grid_y, grid_x)[2] = cell.height;
+	    //detection_grid_.at<cv::Vec3f>(grid_y, grid_x)[3] += cell.count;
 	}
 
 	// Publish sparse semantic cloud

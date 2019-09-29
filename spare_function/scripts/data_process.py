@@ -68,26 +68,27 @@ def sensorCallback(msg): #sailboat_message::Sensor_msg
     sensor2_submsg[1] = msg.y_target
     sensor2_submsg[2] = 0.5 * float(sensor2_submsg[2]) + 0.5 * msg.yaw_target#math.atan2(msg.vy_target, msg.vx_target)
     sensor2_submsg[3] = 0.5 * sensor2_submsg[3] + 0.5 * math.sqrt(math.pow(msg.vx_target, 2)+math.pow(msg.vy_target, 2))
-    print ('sensor2_submsg: ', sensor2_submsg)
+    # print ('sensor2_submsg: ', sensor2_submsg)
 
 def trackingCallback_point(msg):
     global target_submsg
     target = []
     for ot in msg.list:
-        if ot.semantic_id == 34 and ot.semantic_confidence > 0.3:
+        ot = msg.list[0]
+        if ot.semantic_id == 76:
             tmp = [ot.semantic_confidence, ot.world_pose.point.x, ot.world_pose.point.y, ot.velocity, YawLimit(ot.heading)]
             target += [tmp]
-    if len(target) > 1:
-        target.sort(key=lambda x:x[0])
-    if len(target) > 0:
-        target_submsg = target[0]
-    if len(target_submsg)>0:
-        tar_msg = BaseSensor()
-        tar_msg.x = target_submsg[1]
-        tar_msg.y = target_submsg[2]
-        tar_msg.vx = target_submsg[3]
-        tar_msg.yaw = target_submsg[4]
-        target_pub.publish(tar_msg)
+        if len(target) > 1:
+            target.sort(key=lambda x:x[0])
+        if len(target) > 0:
+            target_submsg = target[0]
+        if len(target_submsg)>0:
+            tar_msg = BaseSensor()
+            tar_msg.x = target_submsg[1]
+            tar_msg.y = target_submsg[2]
+            tar_msg.vx = target_submsg[3]
+            tar_msg.yaw = target_submsg[4]
+            target_pub.publish(tar_msg)
     print ('target_submsg: ', target_submsg)
 
 def trackingCallback_run(msg):
@@ -99,18 +100,24 @@ def trackingCallback_run(msg):
                 ot.heading = -ot.heading
                 ot.velocity = -ot.velocity
             tmp = [ot.semantic_confidence, ot.world_pose.point.x, ot.world_pose.point.y, YawLimit(ot.heading), ot.velocity]
-            target += [tmp]
-    if len(target) > 1:
-        target.sort(key=lambda x:x[0])
-    if len(target) > 0:
-        target_submsg = target[0]
-    if len(target_submsg)>0:
-        tar_msg = BaseSensor()
-        tar_msg.x = target_submsg[1]
-        tar_msg.y = target_submsg[2]
-        tar_msg.vx = target_submsg[4]
-        tar_msg.yaw = target_submsg[3]
-        target_pub.publish(tar_msg)
+            # target += [tmp]
+            tar_msg = BaseSensor()
+            tar_msg.x = tmp[1]
+            tar_msg.y = tmp[2]
+            tar_msg.vx = tmp[4]
+            tar_msg.yaw = tmp[3]
+            target_pub.publish(tar_msg)
+    # if len(target) > 1:
+    #     target.sort(key=lambda x:x[0])
+    # if len(target) > 0:
+    #     target_submsg = target[0]
+    # if len(target_submsg)>0:
+    #     tar_msg = BaseSensor()
+    #     tar_msg.x = target_submsg[1]
+    #     tar_msg.y = target_submsg[2]
+    #     tar_msg.vx = target_submsg[4]
+    #     tar_msg.yaw = target_submsg[3]
+    #     target_pub.publish(tar_msg)
     print ('target_submsg: ', target_submsg)
     
 
@@ -137,10 +144,10 @@ if __name__ == "__main__":
         mach_pub = rospy.Publisher('self/usv/cmd_drive', Drive, queue_size=5)
     spare_function_pub = rospy.Publisher('spare_function_out', spare_function_out, queue_size=5)
     spare_function_para_pub = rospy.Publisher('spare_function_para', spare_function_para, queue_size=5)
-    target_pub = rospy.Publisher('target_pose', BaseSensor, queue_size=5)
+    target_pub = rospy.Publisher('target_pose2', BaseSensor, queue_size=5)
 
     rospy.Subscriber("/base/sensor", BaseSensor, sensorCallback)
-    rospy.Subscriber("/tracking/objects", ObjectArray, trackingCallback_point)
+    rospy.Subscriber("/tracking/objects2", ObjectArray, trackingCallback_point)
     config_srv = Server(spare_function_Config, getConfigCallback)
 
     rate = rospy.Rate(10) 
