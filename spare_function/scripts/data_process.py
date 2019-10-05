@@ -144,10 +144,10 @@ if __name__ == "__main__":
         mach_pub = rospy.Publisher('self/usv/cmd_drive', Drive, queue_size=5)
     spare_function_pub = rospy.Publisher('spare_function_out', spare_function_out, queue_size=5)
     spare_function_para_pub = rospy.Publisher('spare_function_para', spare_function_para, queue_size=5)
-    target_pub = rospy.Publisher('target_pose2', BaseSensor, queue_size=5)
+    target_pub = rospy.Publisher('target_pose3', BaseSensor, queue_size=5)
 
     rospy.Subscriber("/base/sensor", BaseSensor, sensorCallback)
-    rospy.Subscriber("/tracking/objects2", ObjectArray, trackingCallback_point)
+    rospy.Subscriber("/tracking/objects3", ObjectArray, trackingCallback_point)
     config_srv = Server(spare_function_Config, getConfigCallback)
 
     rate = rospy.Rate(10) 
