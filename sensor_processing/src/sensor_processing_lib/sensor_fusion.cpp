@@ -26,8 +26,8 @@ SensorFusion::SensorFusion(ros::NodeHandle nh, ros::NodeHandle private_nh):
 	pcl_sparse_semantic_(new VRGBPointCloud),
 	//cloud_sub_(nh, "/kitti/velo/pointcloud", 2),
 	//image_sub_(nh,	"/kitti/camera_color_left/image_raw", 2),
-	cloud_sub_(nh, "/velodyne_point/cloud", 2),
-	image_sub_(nh,	"/image_raw/image", 2),
+	cloud_sub_(nh, "/velodyne_point/cloud2", 2),
+	image_sub_(nh,	"/image_raw/image2", 2),
 	// cloud_sub_(nh, "/velodyne_points2", 2),
 	// image_sub_(nh,	"/camera/image_raw", 2),
 	

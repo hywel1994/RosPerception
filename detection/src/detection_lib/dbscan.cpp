@@ -381,12 +381,12 @@ void DbScan::filterClusters(const cv::Mat grid){
 		// }
                 //addObject(c);
                 //&& c.count > 10
-		if(updateBoat(c) && c.count > 10){
-            ROS_INFO("find boat [%d]", c.count);
-			c.semantic.id = 76;
-			c.is_new_track = true;
-			addObject(c);
-		}
+		// if(updateBoat(c) && c.count > 10){
+        //     ROS_INFO("find boat [%d]", c.count);
+		// 	c.semantic.id = 76;
+		 	c.is_new_track = true;
+		 	addObject(c);
+		// }
 		// else{
 		// 	ROS_INFO("other [%d]", c.count);
 		// 	addObject(c);

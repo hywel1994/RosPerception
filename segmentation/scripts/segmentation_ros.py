@@ -35,6 +35,8 @@ import sys
 DIR_PATH = os.path.dirname(sys.path[0])
 
 colors = loadmat(DIR_PATH+'/scripts/data/color150.mat')['colors']
+
+sim = True
 # # road 7 
 # colors[6] = [128,  64, 128]
 # # sidewalk 12
@@ -104,9 +106,13 @@ class Segmentation(object):
     def __init__(self, segmentation_module, nums_class, padding_constant, rate=2):
         #self.image_sub = rospy.Subscriber("/kitti/camera_color_left/image_raw", Image, self.imageCallback, queue_size=2)
         #self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.imageCallback, queue_size=2)
-        #self.cloud_sub = rospy.Subscriber("/velodyne_points", PointCloud2, self.cloudCallback, queue_size=2)
-        self.image_sub = rospy.Subscriber("/image_raw/image", Image, self.imageCallback, queue_size=2)
-        self.cloud_sub = rospy.Subscriber("/velodyne_point/cloud", PointCloud2, self.cloudCallback, queue_size=2)
+        #        
+        if sim:
+            self.cloud_sub = rospy.Subscriber("/velodyne_points2", PointCloud2, self.cloudCallback, queue_size=2)
+            self.image_sub = rospy.Subscriber("self/camera/usv/image_raw", Image, self.imageCallback, queue_size=2)
+        else: 
+            self.image_sub = rospy.Subscriber("/image_raw/image", Image, self.imageCallback, queue_size=2)  
+            self.cloud_sub = rospy.Subscriber("/velodyne_point/cloud", PointCloud2, self.cloudCallback, queue_size=2)
         self.count = 0
         # self.ts = message_filters.TimeSynchronizer([self.image_sub
         #                                             , self.cloud_sub

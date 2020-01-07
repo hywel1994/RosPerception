@@ -159,7 +159,7 @@ if __name__ == "__main__":
     target_pub = rospy.Publisher('target_pose', BaseSensor, queue_size=5)
 
     rospy.Subscriber("/base/sensor", BaseSensor, sensorCallback)
-    rospy.Subscriber("/tracking/objects", ObjectArray, trackingCallback)
+    rospy.Subscriber("/tracking/objects3", ObjectArray, trackingCallback)
     config_srv = Server(spare_function_Config, getConfigCallback)
 
     rate = rospy.Rate(10) 

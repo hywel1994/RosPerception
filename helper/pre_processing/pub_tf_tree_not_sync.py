@@ -36,6 +36,7 @@ class synchronizer:
         self.br_boat_world = tf.TransformBroadcaster()
         self.br_lidar_boat = tf.TransformBroadcaster()
         self.br_lidar_boat2 = tf.TransformBroadcaster()
+        self.br_lidar_boat3 = tf.TransformBroadcaster()
         self.br_camera_boat = tf.TransformBroadcaster()
         
         self.gps_velo_msg = Vector3Stamped()
@@ -139,6 +140,12 @@ class synchronizer:
                      "world")
 
         self.br_lidar_boat2.sendTransform((0, 0, 0.2),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "self/velodyne",
+                     "boat")
+
+        self.br_lidar_boat3.sendTransform((0, 0, 0.2),
                      tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
                      "velodyne",

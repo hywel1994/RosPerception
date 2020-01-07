@@ -64,7 +64,7 @@ def trackingCallback(msg):
     global target_submsg
     target = []
     for ot in msg.list:
-        if ot.semantic_id == 34 and ot.semantic_confidence > 0.3:
+        if (ot.semantic_id == 34 or ot.semantic_id == 26) and ot.semantic_confidence > 0.3:
             tmp = [ot.semantic_confidence, ot.world_pose.point.x, ot.world_pose.point.y, ot.velocity, ot.heading]
             target += [tmp]
     if len(target) > 1:
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     target_pub = rospy.Publisher('target_pose', BaseSensor, queue_size=5)
     
     rospy.Subscriber("/base/sensor", BaseSensor, sensorCallback)
-    rospy.Subscriber("/tracking/objects", ObjectArray, trackingCallback)
+    rospy.Subscriber("/tracking/objects3", ObjectArray, trackingCallback)
     config_srv = Server(spare_function_Config, getConfigCallback)
 
     rate = rospy.Rate(10) 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
             mach_np = [0,0]
             out_np = [0,0]
 
-            if para_cfg[0] == 0:
+            if False:#para_cfg[0] == 0:
                 target_yaw = para_cfg[1]
                 target_x = para_cfg[2]
                 target_y = para_cfg[3]
@@ -188,7 +188,7 @@ if __name__ == "__main__":
                     state += 1
             
             if state == 2:
-                print ('pos_farther, pos, pos_close', pos_farther, pos, pos_close)
+                #print ('pos_farther, pos, pos_close', pos_farther, pos, pos_close)
                 dis_L_y, dis_L_u, target_yaw, target_u = calLosDis(target_point, pos, pos_farther, sensor_submsg, run_yaw)
 
                 if (dis_L_u < 1):
@@ -198,16 +198,15 @@ if __name__ == "__main__":
                 else:
                 
                     print ('run_yaw: ', run_yaw)
-                    print ('dis_L_y, dis_L_u: ', dis_L_y, dis_L_u)
-
-                    print ('target_yaw, target_u: ', target_yaw, target_u)
+                    #print ('dis_L_y, dis_L_u: ', dis_L_y, dis_L_u)
+                    #print ('target_yaw, target_u: ', target_yaw, target_u)
                 
                     self_u = math.sqrt(math.pow(sensor_submsg[3], 2)+math.pow(sensor_submsg[4], 2))
                     left_motor,right_motor = controller.outputSignal(target_yaw, sensor_submsg[2], target_u, self_u)
 
             mach_np = [left_motor,right_motor]
             
-            print ('mach_np: ', mach_np)
+            #print ('mach_np: ', mach_np)
             if is_sim:
                 mach_pubmsg = getOutMachPut(mach_np)
                 
